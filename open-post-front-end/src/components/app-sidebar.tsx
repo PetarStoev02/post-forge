@@ -142,9 +142,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span>New Post</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuButton>
-            <SidebarTrigger className="justify-start" />
-          </SidebarMenuButton>
+          <SidebarMenuItem>
+            <SidebarTrigger className="h-8 w-full justify-start px-2" />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

@@ -9,38 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContentLibraryRouteImport } from './routes/content-library'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AccountsRouteImport } from './routes/accounts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlatformsTwitterRouteImport } from './routes/platforms/twitter'
+import { Route as PlatformsLinkedinRouteImport } from './routes/platforms/linkedin'
+import { Route as PlatformsInstagramRouteImport } from './routes/platforms/instagram'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentLibraryRoute = ContentLibraryRouteImport.update({
+  id: '/content-library',
+  path: '/content-library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountsRoute = AccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformsTwitterRoute = PlatformsTwitterRouteImport.update({
+  id: '/platforms/twitter',
+  path: '/platforms/twitter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformsLinkedinRoute = PlatformsLinkedinRouteImport.update({
+  id: '/platforms/linkedin',
+  path: '/platforms/linkedin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformsInstagramRoute = PlatformsInstagramRouteImport.update({
+  id: '/platforms/instagram',
+  path: '/platforms/instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/analytics': typeof AnalyticsRoute
+  '/content-library': typeof ContentLibraryRoute
+  '/dashboard': typeof DashboardRoute
+  '/platforms/instagram': typeof PlatformsInstagramRoute
+  '/platforms/linkedin': typeof PlatformsLinkedinRoute
+  '/platforms/twitter': typeof PlatformsTwitterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/analytics': typeof AnalyticsRoute
+  '/content-library': typeof ContentLibraryRoute
+  '/dashboard': typeof DashboardRoute
+  '/platforms/instagram': typeof PlatformsInstagramRoute
+  '/platforms/linkedin': typeof PlatformsLinkedinRoute
+  '/platforms/twitter': typeof PlatformsTwitterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accounts': typeof AccountsRoute
+  '/analytics': typeof AnalyticsRoute
+  '/content-library': typeof ContentLibraryRoute
+  '/dashboard': typeof DashboardRoute
+  '/platforms/instagram': typeof PlatformsInstagramRoute
+  '/platforms/linkedin': typeof PlatformsLinkedinRoute
+  '/platforms/twitter': typeof PlatformsTwitterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/content-library'
+    | '/dashboard'
+    | '/platforms/instagram'
+    | '/platforms/linkedin'
+    | '/platforms/twitter'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/content-library'
+    | '/dashboard'
+    | '/platforms/instagram'
+    | '/platforms/linkedin'
+    | '/platforms/twitter'
+  id:
+    | '__root__'
+    | '/'
+    | '/accounts'
+    | '/analytics'
+    | '/content-library'
+    | '/dashboard'
+    | '/platforms/instagram'
+    | '/platforms/linkedin'
+    | '/platforms/twitter'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountsRoute: typeof AccountsRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  ContentLibraryRoute: typeof ContentLibraryRoute
+  DashboardRoute: typeof DashboardRoute
+  PlatformsInstagramRoute: typeof PlatformsInstagramRoute
+  PlatformsLinkedinRoute: typeof PlatformsLinkedinRoute
+  PlatformsTwitterRoute: typeof PlatformsTwitterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-library': {
+      id: '/content-library'
+      path: '/content-library'
+      fullPath: '/content-library'
+      preLoaderRoute: typeof ContentLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accounts': {
+      id: '/accounts'
+      path: '/accounts'
+      fullPath: '/accounts'
+      preLoaderRoute: typeof AccountsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +171,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platforms/twitter': {
+      id: '/platforms/twitter'
+      path: '/platforms/twitter'
+      fullPath: '/platforms/twitter'
+      preLoaderRoute: typeof PlatformsTwitterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms/linkedin': {
+      id: '/platforms/linkedin'
+      path: '/platforms/linkedin'
+      fullPath: '/platforms/linkedin'
+      preLoaderRoute: typeof PlatformsLinkedinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platforms/instagram': {
+      id: '/platforms/instagram'
+      path: '/platforms/instagram'
+      fullPath: '/platforms/instagram'
+      preLoaderRoute: typeof PlatformsInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountsRoute: AccountsRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  ContentLibraryRoute: ContentLibraryRoute,
+  DashboardRoute: DashboardRoute,
+  PlatformsInstagramRoute: PlatformsInstagramRoute,
+  PlatformsLinkedinRoute: PlatformsLinkedinRoute,
+  PlatformsTwitterRoute: PlatformsTwitterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
