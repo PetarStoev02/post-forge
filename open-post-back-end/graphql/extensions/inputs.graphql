@@ -1,0 +1,11 @@
+# ============================================
+# PHASE 1: SKELETON INPUTS
+# ============================================
+# Input types will be added as each domain is implemented.
+#
+# Planned inputs include:
+# - LoginInput, RegisterInput, ResetPasswordInput (Phase 2)
+# - CreateTeamInput, UpdateTeamInput, InviteMemberInput (Phase 3)
+# - CreatePostInput, UpdatePostInput, PostContentInput, SchedulePostInput (Phase 4)
+#
+# See README.md and the implementation plan for complete input definitions.

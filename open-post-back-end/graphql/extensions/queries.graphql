@@ -1,0 +1,24 @@
+"Root query type"
+type Query {
+    # ============================================
+    # PUBLIC QUERIES (No Auth Required)
+    # ============================================
+
+    "Health check endpoint"
+    health: String! @field(resolver: "App\\Foundation\\IO\\GraphQL\\Queries\\HealthCheck")
+}
+
+# Note: Additional queries will be added as domains are implemented
+# The following are placeholders showing the intended API design:
+#
+# extend type Query @guard {
+#     me: Me! @auth
+#     team(id: ID!): Team
+#     teams: [Team!]!
+#     post(id: ID!): Post
+#     posts(teamId: ID!, status: PostStatus, first: Int, page: Int): PostConnection!
+#     scheduledPosts(teamId: ID!): [ScheduledPost!]!
+#     calendarPosts(teamId: ID!, startDate: Date!, endDate: Date!): [Post!]!
+#     media(teamId: ID!, type: MediaType): [Media!]!
+#     socialAccounts(teamId: ID!): [SocialAccount!]!
+# }

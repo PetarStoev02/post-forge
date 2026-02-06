@@ -1,0 +1,13 @@
+# ============================================
+# PHASE 1: SKELETON ENUMS
+# ============================================
+# Enum types will be added as each domain is implemented.
+#
+# Planned enums include:
+# - TeamRole (Phase 3)
+# - PostStatus (Phase 4)
+# - MediaType (Phase 4)
+# - Platform, ConnectionStatus (Phase 5)
+# - PublishStatus (Phase 6)
+#
+# See README.md and the implementation plan for complete enum definitions.

@@ -1,0 +1,15 @@
+#import extensions/scalars.graphql
+#import extensions/enums.graphql
+#import extensions/types.graphql
+#import extensions/inputs.graphql
+#import extensions/queries.graphql
+#import extensions/mutations.graphql
+
+"Indicates that clients can only access this field or type if authenticated."
+directive @guard on FIELD_DEFINITION | OBJECT
+
+"Indicates the field is deprecated with an optional reason."
+directive @deprecated(
+    "The reason for deprecation."
+    reason: String = "No longer supported"
+) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE

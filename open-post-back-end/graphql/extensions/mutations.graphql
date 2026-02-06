@@ -1,0 +1,20 @@
+"Root mutation type"
+type Mutation {
+    # Placeholder mutation - will be implemented in Phase 2
+    _placeholder: String @field(resolver: "App\\Foundation\\IO\\GraphQL\\Queries\\HealthCheck")
+}
+
+# Note: Full mutations will be added as domains are implemented.
+# See the implementation plan for the complete API design including:
+#
+# Public mutations:
+# - login(input: LoginInput!): AuthPayload!
+# - register(input: RegisterInput!): AuthPayload!
+# - forgotPassword(email: String!): Boolean!
+# - resetPassword(input: ResetPasswordInput!): Boolean!
+#
+# Authenticated mutations:
+# - logout: Boolean!
+# - updateProfile(input: UpdateProfileInput!): Me!
+# - createTeam(input: CreateTeamInput!): Team!
+# - team(id: ID!): TeamMutation!  # Scoped mutations for team operations

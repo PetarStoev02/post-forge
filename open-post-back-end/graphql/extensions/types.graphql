@@ -1,0 +1,10 @@
+# ============================================
+# PHASE 1: SKELETON TYPES
+# ============================================
+# These types are placeholders showing the planned API structure.
+# Full implementations will be added as each domain is built.
+
+# Note: Types like Me, User, Team, Post, Media, SocialAccount, ScheduledPost
+# will be implemented progressively in Phase 2-6.
+#
+# See README.md and the implementation plan for complete type definitions.
