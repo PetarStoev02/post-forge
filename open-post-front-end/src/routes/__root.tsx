@@ -41,9 +41,9 @@ function RootLayout() {
   return (
     <ApolloProvider client={apolloClient}>
       <CreatePostProvider>
-        <SidebarProvider>
+        <SidebarProvider className="h-full">
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="h-full">
             <Outlet />
           </SidebarInset>
         </SidebarProvider>

@@ -74,10 +74,14 @@ class Post extends Model
 
     /**
      * Scope to filter posts scheduled between dates.
+     * Includes all posts on both start and end dates.
      */
     public function scopeScheduledBetween($query, string $startDate, string $endDate)
     {
-        return $query->whereBetween('scheduled_at', [$startDate, $endDate]);
+        return $query->whereBetween('scheduled_at', [
+            $startDate . ' 00:00:00',
+            $endDate . ' 23:59:59',
+        ]);
     }
 
     /**

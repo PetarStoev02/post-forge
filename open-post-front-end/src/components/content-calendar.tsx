@@ -201,32 +201,30 @@ function PostCard({ post, compact = false }: { post: CalendarPost; compact?: boo
 
 function WeekDayColumn({ day, dayName, onAddPost }: { day: DayData; dayName: string; onAddPost: (date: Date) => void }) {
   return (
-    <div className="flex min-h-[500px] flex-col border-r last:border-r-0">
+    <div className="group flex flex-1 flex-col border-r last:border-r-0">
       <div
         className={cn(
-          "flex h-12 flex-col items-center justify-center border-b px-2 py-1",
+          "flex h-14 flex-col items-center justify-center border-b px-2 py-1",
           day.isToday && "bg-primary text-primary-foreground"
         )}
       >
         <span className="text-xs font-medium">{dayName}</span>
-        <span className="text-sm font-semibold">{day.dayNumber}</span>
+        <span className="text-lg font-semibold">{day.dayNumber}</span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2">
-        {day.posts.length === 0 ? (
-          <button
-            onClick={() => onAddPost(day.date)}
-            className="flex h-20 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-muted-foreground/25 text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:bg-muted/50"
-          >
-            <PlusIcon className="size-5" />
-            <span className="text-xs">Add post</span>
-          </button>
-        ) : (
-          <>
-            {day.posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </>
-        )}
+        {day.posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+        <button
+          onClick={() => onAddPost(day.date)}
+          className={cn(
+            "flex h-16 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-transparent text-muted-foreground transition-all",
+            "opacity-0 group-hover:opacity-100 hover:border-muted-foreground/50 hover:bg-muted/50"
+          )}
+        >
+          <PlusIcon className="size-4" />
+          <span className="text-xs">Add post</span>
+        </button>
       </div>
     </div>
   )
@@ -236,7 +234,7 @@ function MonthDayCell({ day, onAddPost }: { day: DayData; onAddPost: (date: Date
   return (
     <div
       className={cn(
-        "flex min-h-[120px] flex-col border-b border-r p-2",
+        "group flex flex-1 flex-col border-b border-r p-2",
         !day.isCurrentMonth && "bg-muted/30"
       )}
     >
@@ -250,25 +248,20 @@ function MonthDayCell({ day, onAddPost }: { day: DayData; onAddPost: (date: Date
         {day.dayNumber}
       </div>
       <div className="flex flex-1 flex-col gap-1">
-        {day.posts.length === 0 ? (
-          <button
-            onClick={() => onAddPost(day.date)}
-            className="flex flex-1 items-center justify-center rounded border-2 border-dashed border-transparent text-muted-foreground transition-colors hover:border-muted-foreground/25 hover:bg-muted/50"
-          >
-            <PlusIcon className="size-4" />
-          </button>
-        ) : (
-          <>
-            {day.posts.slice(0, 3).map((post) => (
-              <PostCard key={post.id} post={post} compact />
-            ))}
-            {day.posts.length > 3 && (
-              <span className="text-xs text-muted-foreground">
-                +{day.posts.length - 3} more
-              </span>
-            )}
-          </>
+        {day.posts.slice(0, 3).map((post) => (
+          <PostCard key={post.id} post={post} compact />
+        ))}
+        {day.posts.length > 3 && (
+          <span className="text-xs text-muted-foreground">
+            +{day.posts.length - 3} more
+          </span>
         )}
+        <button
+          onClick={() => onAddPost(day.date)}
+          className="mt-auto flex items-center justify-center rounded py-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted/50"
+        >
+          <PlusIcon className="size-4" />
+        </button>
       </div>
     </div>
   )
@@ -312,6 +305,7 @@ export function ContentCalendar() {
   // Fetch posts from the backend
   const { data, loading } = useQuery<GetCalendarPostsResponse>(GET_CALENDAR_POSTS, {
     variables: dateRange,
+    fetchPolicy: 'cache-and-network',
   })
 
   // Transform API data to calendar format
@@ -420,15 +414,15 @@ export function ContentCalendar() {
       </div>
 
       {/* Calendar Grid */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-auto">
         {view === "week" ? (
-          <div className="grid min-w-[900px] grid-cols-7 border-b">
+          <div className="flex min-w-[900px] flex-1 border-b">
             {weekDays.map((day, index) => (
               <WeekDayColumn key={day.date.toISOString()} day={day} dayName={dayNames[index]} onAddPost={(date) => openSheet(date)} />
             ))}
           </div>
         ) : (
-          <div className="min-w-[900px]">
+          <div className="flex min-w-[900px] flex-1 flex-col">
             {/* Month header */}
             <div className="grid grid-cols-7 border-b">
               {dayNames.map((name) => (
@@ -440,8 +434,11 @@ export function ContentCalendar() {
                 </div>
               ))}
             </div>
-            {/* Month grid */}
-            <div className="grid grid-cols-7">
+            {/* Month grid - calculate rows based on number of weeks */}
+            <div
+              className="grid flex-1 grid-cols-7"
+              style={{ gridTemplateRows: `repeat(${Math.ceil(monthDays.length / 7)}, minmax(0, 1fr))` }}
+            >
               {monthDays.map((day) => (
                 <MonthDayCell key={day.date.toISOString()} day={day} onAddPost={(date) => openSheet(date)} />
               ))}
