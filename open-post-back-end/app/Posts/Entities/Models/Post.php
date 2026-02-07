@@ -15,13 +15,46 @@ class Post extends Model
 
     protected $casts = [
         'platforms' => 'array',
-        'status' => PostStatus::class,
         'scheduled_at' => 'datetime',
         'media_urls' => 'array',
         'hashtags' => 'array',
         'mentions' => 'array',
         'link_preview' => 'array',
     ];
+
+    protected $attributes = [
+        'media_urls' => '[]',
+        'hashtags' => '[]',
+        'mentions' => '[]',
+    ];
+
+    /**
+     * Get platforms in uppercase for GraphQL serialization.
+     */
+    protected function platforms(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => array_map('strtoupper', json_decode($value, true) ?? []),
+            set: fn ($value) => json_encode(array_map('strtolower', $value)),
+        );
+    }
+
+    /**
+     * Get status in uppercase for GraphQL serialization.
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => strtoupper($value),
+            set: function ($value) {
+                if ($value instanceof PostStatus) {
+                    return $value->value;
+                }
+
+                return strtolower($value);
+            },
+        );
+    }
 
     /**
      * Get the link preview as a value object.
@@ -34,9 +67,9 @@ class Post extends Model
     /**
      * Scope to filter posts by status.
      */
-    public function scopeWithStatus($query, PostStatus $status)
+    public function scopeWithStatus($query, string $status)
     {
-        return $query->where('status', $status);
+        return $query->where('status', strtolower($status));
     }
 
     /**
@@ -53,7 +86,7 @@ class Post extends Model
     public function scopeReadyToPublish($query)
     {
         return $query
-            ->where('status', PostStatus::Scheduled)
+            ->where('status', 'scheduled')
             ->where('scheduled_at', '<=', now());
     }
 }

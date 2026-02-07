@@ -8,13 +8,13 @@ type Post {
     content: String!
     platforms: [Platform!]!
     status: PostStatus!
-    scheduledAt: DateTime
-    mediaUrls: [String!]!
-    hashtags: [String!]!
-    mentions: [String!]!
-    linkPreview: LinkPreview
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    scheduledAt: DateTime @rename(attribute: "scheduled_at")
+    mediaUrls: [String!] @rename(attribute: "media_urls")
+    hashtags: [String!]
+    mentions: [String!]
+    linkPreview: LinkPreview @rename(attribute: "link_preview")
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
 }
 
 "Link preview metadata"

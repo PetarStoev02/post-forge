@@ -65,11 +65,17 @@ const statusStyles: Record<PostStatus, { label: string; variant: "default" | "se
 }
 
 function formatDateKey(date: Date): string {
-  return date.toISOString().split("T")[0]
+  // Use local date to avoid timezone shift (toISOString converts to UTC)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
 }
 
-function formatTime(isoString: string): string {
-  const date = new Date(isoString)
+function formatTime(dateString: string): string {
+  // Handle both ISO format (T separator) and Laravel format (space separator)
+  const normalizedDate = dateString.replace(" ", "T")
+  const date = new Date(normalizedDate)
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
 }
 
@@ -316,7 +322,8 @@ export function ContentCalendar() {
       for (const post of data.calendarPosts) {
         if (!post.scheduledAt) continue
 
-        const dateKey = post.scheduledAt.split("T")[0]
+        // Handle both ISO format (T separator) and Laravel format (space separator)
+        const dateKey = post.scheduledAt.split(/[T ]/)[0]
         const calendarPost: CalendarPost = {
           id: post.id,
           platform: transformPlatform(post.platforms[0]),

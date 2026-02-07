@@ -17,7 +17,9 @@ final readonly class EloquentPostRepository implements PostRepository
 
     public function create(array $attributes): Post
     {
-        return Post::create($attributes);
+        $post = Post::create($attributes);
+
+        return $post->fresh();
     }
 
     public function update(string $id, array $attributes): Post

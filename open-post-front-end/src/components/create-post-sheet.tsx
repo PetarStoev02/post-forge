@@ -156,7 +156,9 @@ export function CreatePostSheet() {
       const [hours, minutes] = scheduledTime.split(":").map(Number)
       const date = new Date(scheduledDate)
       date.setHours(hours, minutes, 0, 0)
-      scheduledAt = date.toISOString()
+      // Format as Y-m-d H:i:s for Lighthouse DateTime scalar
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      scheduledAt = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(hours)}:${pad(minutes)}:00`
     }
 
     const input: CreatePostInput = {
