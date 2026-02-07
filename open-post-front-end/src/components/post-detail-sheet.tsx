@@ -70,11 +70,13 @@ const platformLabels: Record<string, string> = {
   LINKEDIN: "LinkedIn",
 }
 
-const statusStyles: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  SCHEDULED: { label: "Scheduled", variant: "secondary" },
-  DRAFT: { label: "Draft", variant: "outline" },
-  PUBLISHED: { label: "Published", variant: "default" },
-  FAILED: { label: "Failed", variant: "destructive" },
+const statusStyles: Record<string, { label: string; className: string }> = {
+  DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" },
+  SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200" },
+  PUBLISHED: { label: "Published", className: "bg-green-100 text-green-700 hover:bg-green-200 border-green-200" },
+  FAILED: { label: "Failed", className: "bg-red-100 text-red-700 hover:bg-red-200 border-red-200" },
+  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200" },
+  CANCELLED: { label: "Cancelled", className: "bg-gray-100 text-gray-500 hover:bg-gray-200 border-gray-200" },
 }
 
 function formatDateTime(dateString: string): string {
@@ -204,7 +206,7 @@ export function PostDetailSheet() {
     await updatePost({ variables: { id: selectedPost.id, input: { scheduledAt } } })
   }
 
-  const handleStatusChange = async (newStatus: "DRAFT" | "SCHEDULED") => {
+  const handleStatusChange = async (newStatus: string) => {
     if (!selectedPost) return
     await updatePost({ variables: { id: selectedPost.id, input: { status: newStatus } } })
   }
@@ -257,7 +259,7 @@ export function PostDetailSheet() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="cursor-pointer">
-                    <Badge variant={statusStyle.variant} className="cursor-pointer hover:opacity-80">
+                    <Badge variant="outline" className={cn("cursor-pointer border", statusStyle.className)}>
                       {statusStyle.label}
                     </Badge>
                   </button>
@@ -267,6 +269,7 @@ export function PostDetailSheet() {
                     onClick={() => handleStatusChange("DRAFT")}
                     className={selectedPost.status === "DRAFT" ? "bg-muted" : ""}
                   >
+                    <span className="mr-2 size-2 rounded-full bg-slate-400" />
                     Draft
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -274,8 +277,37 @@ export function PostDetailSheet() {
                     className={selectedPost.status === "SCHEDULED" ? "bg-muted" : ""}
                     disabled={!selectedPost.scheduledAt}
                   >
+                    <span className="mr-2 size-2 rounded-full bg-blue-500" />
                     Scheduled
                     {!selectedPost.scheduledAt && <span className="ml-2 text-xs text-muted-foreground">(needs date)</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("PENDING")}
+                    className={selectedPost.status === "PENDING" ? "bg-muted" : ""}
+                  >
+                    <span className="mr-2 size-2 rounded-full bg-yellow-500" />
+                    Pending Review
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("PUBLISHED")}
+                    className={selectedPost.status === "PUBLISHED" ? "bg-muted" : ""}
+                  >
+                    <span className="mr-2 size-2 rounded-full bg-green-500" />
+                    Published
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("CANCELLED")}
+                    className={selectedPost.status === "CANCELLED" ? "bg-muted" : ""}
+                  >
+                    <span className="mr-2 size-2 rounded-full bg-gray-400" />
+                    Cancelled
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("FAILED")}
+                    className={selectedPost.status === "FAILED" ? "bg-muted" : ""}
+                  >
+                    <span className="mr-2 size-2 rounded-full bg-red-500" />
+                    Failed
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

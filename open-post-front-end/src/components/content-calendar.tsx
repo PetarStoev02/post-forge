@@ -28,7 +28,7 @@ import { GET_CALENDAR_POSTS, CREATE_POST } from "@/graphql/operations/posts"
 import type { Platform as APIPlatform, PostStatus as APIPostStatus, GetCalendarPostsResponse, Post, CreatePostInput } from "@/types/post"
 
 type Platform = "twitter" | "instagram" | "linkedin"
-type PostStatus = "scheduled" | "draft" | "published" | "failed"
+type PostStatus = "draft" | "scheduled" | "pending" | "published" | "cancelled" | "failed"
 
 interface CalendarPost {
   id: string
@@ -59,11 +59,13 @@ const platformColors: Record<Platform, string> = {
   linkedin: "text-[#0A66C2]",
 }
 
-const statusStyles: Record<PostStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  scheduled: { label: "Scheduled", variant: "secondary" },
-  draft: { label: "Draft", variant: "outline" },
-  published: { label: "Published", variant: "default" },
-  failed: { label: "Failed", variant: "destructive" },
+const statusStyles: Record<PostStatus, { label: string; className: string }> = {
+  draft: { label: "Draft", className: "bg-slate-100 text-slate-700 border-slate-200" },
+  scheduled: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border-blue-200" },
+  pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  published: { label: "Published", className: "bg-green-100 text-green-700 border-green-200" },
+  cancelled: { label: "Cancelled", className: "bg-gray-100 text-gray-500 border-gray-200" },
+  failed: { label: "Failed", className: "bg-red-100 text-red-700 border-red-200" },
 }
 
 function formatDateKey(date: Date): string {
@@ -211,7 +213,7 @@ function PostCard({ post, compact = false, onDuplicate }: { post: CalendarPost; 
       >
         {post.content}
       </button>
-      <Badge variant={statusStyle.variant} className="text-xs">
+      <Badge variant="outline" className={cn("text-xs border", statusStyle.className)}>
         {statusStyle.label}
       </Badge>
     </div>

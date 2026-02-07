@@ -1,5 +1,5 @@
 export type Platform = 'TWITTER' | 'INSTAGRAM' | 'LINKEDIN';
-export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED';
+export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PENDING' | 'PUBLISHED' | 'CANCELLED' | 'FAILED';
 
 export interface LinkPreview {
   url: string;

@@ -13,6 +13,8 @@ enum Platform {
 enum PostStatus {
     DRAFT
     SCHEDULED
+    PENDING
     PUBLISHED
+    CANCELLED
     FAILED
 }
