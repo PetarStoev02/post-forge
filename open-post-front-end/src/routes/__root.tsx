@@ -8,6 +8,8 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { CreatePostProvider } from '@/contexts/create-post-context'
 import { CreatePostSheet } from '@/components/create-post-sheet'
+import { PostActionsProvider } from '@/contexts/post-actions-context'
+import { PostDetailSheet } from '@/components/post-detail-sheet'
 
 import appCss from '../styles.css?url'
 
@@ -41,13 +43,16 @@ function RootLayout() {
   return (
     <ApolloProvider client={apolloClient}>
       <CreatePostProvider>
-        <SidebarProvider className="h-full">
-          <AppSidebar />
-          <SidebarInset className="h-full">
-            <Outlet />
-          </SidebarInset>
-        </SidebarProvider>
-        <CreatePostSheet />
+        <PostActionsProvider>
+          <SidebarProvider className="h-full">
+            <AppSidebar />
+            <SidebarInset className="h-full">
+              <Outlet />
+            </SidebarInset>
+          </SidebarProvider>
+          <CreatePostSheet />
+          <PostDetailSheet />
+        </PostActionsProvider>
       </CreatePostProvider>
     </ApolloProvider>
   )

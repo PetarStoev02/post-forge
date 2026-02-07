@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useQuery } from "@apollo/client/react"
+import { useQuery, useMutation } from "@apollo/client/react"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -23,8 +23,9 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
-import { GET_CALENDAR_POSTS } from "@/graphql/operations/posts"
-import type { Platform as APIPlatform, PostStatus as APIPostStatus, GetCalendarPostsResponse } from "@/types/post"
+import { usePostActions } from "@/contexts/post-actions-context"
+import { GET_CALENDAR_POSTS, CREATE_POST } from "@/graphql/operations/posts"
+import type { Platform as APIPlatform, PostStatus as APIPostStatus, GetCalendarPostsResponse, Post, CreatePostInput } from "@/types/post"
 
 type Platform = "twitter" | "instagram" | "linkedin"
 type PostStatus = "scheduled" | "draft" | "published" | "failed"
@@ -35,6 +36,7 @@ interface CalendarPost {
   time: string
   content: string
   status: PostStatus
+  fullPost: Post // Store the full post for detail view
 }
 
 interface DayData {
@@ -156,26 +158,33 @@ function formatMonth(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
 }
 
-function PostCard({ post, compact = false }: { post: CalendarPost; compact?: boolean }) {
+function PostCard({ post, compact = false, onDuplicate }: { post: CalendarPost; compact?: boolean; onDuplicate?: () => void }) {
+  const { openPost, editPost, reschedulePost, deletePost } = usePostActions()
   const PlatformIcon = platformIcons[post.platform]
   const statusStyle = statusStyles[post.status]
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1.5 rounded border bg-card px-2 py-1 text-xs">
+      <button
+        onClick={() => openPost(post.fullPost)}
+        className="flex w-full items-center gap-1.5 rounded border bg-card px-2 py-1 text-xs text-left hover:bg-muted/50 transition-colors"
+      >
         <PlatformIcon className={cn("size-3", platformColors[post.platform])} />
         <span className="truncate">{post.time}</span>
-      </div>
+      </button>
     )
   }
 
   return (
     <div className="rounded-lg border bg-card p-3 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => openPost(post.fullPost)}
+          className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+        >
           <PlatformIcon className={cn("size-3.5", platformColors[post.platform])} />
           <span className="text-xs text-muted-foreground">{post.time}</span>
-        </div>
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-6">
@@ -184,14 +193,24 @@ function PostCard({ post, compact = false }: { post: CalendarPost; compact?: boo
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>Duplicate</DropdownMenuItem>
-            <DropdownMenuItem>Reschedule</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => editPost(post.fullPost)}>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={onDuplicate}>Duplicate</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => reschedulePost(post.fullPost)}>Reschedule</DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => deletePost(post.fullPost)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="mb-2 line-clamp-3 text-sm">{post.content}</p>
+      <button
+        onClick={() => openPost(post.fullPost)}
+        className="mb-2 line-clamp-3 text-sm text-left w-full hover:opacity-70 transition-opacity"
+      >
+        {post.content}
+      </button>
       <Badge variant={statusStyle.variant} className="text-xs">
         {statusStyle.label}
       </Badge>
@@ -199,7 +218,7 @@ function PostCard({ post, compact = false }: { post: CalendarPost; compact?: boo
   )
 }
 
-function WeekDayColumn({ day, dayName, onAddPost }: { day: DayData; dayName: string; onAddPost: (date: Date) => void }) {
+function WeekDayColumn({ day, dayName, onAddPost, onDuplicate }: { day: DayData; dayName: string; onAddPost: (date: Date) => void; onDuplicate: (post: Post) => void }) {
   return (
     <div className="group flex flex-1 flex-col border-r last:border-r-0">
       <div
@@ -213,7 +232,7 @@ function WeekDayColumn({ day, dayName, onAddPost }: { day: DayData; dayName: str
       </div>
       <div className="flex flex-1 flex-col gap-2 p-2">
         {day.posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} onDuplicate={() => onDuplicate(post.fullPost)} />
         ))}
         <button
           onClick={() => onAddPost(day.date)}
@@ -230,7 +249,7 @@ function WeekDayColumn({ day, dayName, onAddPost }: { day: DayData; dayName: str
   )
 }
 
-function MonthDayCell({ day, onAddPost }: { day: DayData; onAddPost: (date: Date) => void }) {
+function MonthDayCell({ day, onAddPost, onDuplicate }: { day: DayData; onAddPost: (date: Date) => void; onDuplicate: (post: Post) => void }) {
   return (
     <div
       className={cn(
@@ -249,7 +268,7 @@ function MonthDayCell({ day, onAddPost }: { day: DayData; onAddPost: (date: Date
       </div>
       <div className="flex flex-1 flex-col gap-1">
         {day.posts.slice(0, 3).map((post) => (
-          <PostCard key={post.id} post={post} compact />
+          <PostCard key={post.id} post={post} compact onDuplicate={() => onDuplicate(post.fullPost)} />
         ))}
         {day.posts.length > 3 && (
           <span className="text-xs text-muted-foreground">
@@ -308,6 +327,23 @@ export function ContentCalendar() {
     fetchPolicy: 'cache-and-network',
   })
 
+  // Duplicate post mutation
+  const [duplicatePostMutation] = useMutation(CREATE_POST, {
+    refetchQueries: 'active',
+  })
+
+  const handleDuplicate = React.useCallback((post: Post) => {
+    const input: CreatePostInput = {
+      content: `Duplicate of: ${post.content}`,
+      platforms: post.platforms,
+      status: 'DRAFT',
+      scheduledAt: post.scheduledAt || undefined,
+      hashtags: post.hashtags || [],
+      mentions: post.mentions || [],
+    }
+    duplicatePostMutation({ variables: { input } })
+  }, [duplicatePostMutation])
+
   // Transform API data to calendar format
   const postsMap = React.useMemo(() => {
     const map: Record<string, CalendarPost[]> = {}
@@ -324,6 +360,7 @@ export function ContentCalendar() {
           time: formatTime(post.scheduledAt),
           content: post.content,
           status: transformStatus(post.status),
+          fullPost: post,
         }
 
         if (!map[dateKey]) {
@@ -418,7 +455,7 @@ export function ContentCalendar() {
         {view === "week" ? (
           <div className="flex min-w-[900px] flex-1 border-b">
             {weekDays.map((day, index) => (
-              <WeekDayColumn key={day.date.toISOString()} day={day} dayName={dayNames[index]} onAddPost={(date) => openSheet(date)} />
+              <WeekDayColumn key={day.date.toISOString()} day={day} dayName={dayNames[index]} onAddPost={(date) => openSheet(date)} onDuplicate={handleDuplicate} />
             ))}
           </div>
         ) : (
@@ -440,7 +477,7 @@ export function ContentCalendar() {
               style={{ gridTemplateRows: `repeat(${Math.ceil(monthDays.length / 7)}, minmax(0, 1fr))` }}
             >
               {monthDays.map((day) => (
-                <MonthDayCell key={day.date.toISOString()} day={day} onAddPost={(date) => openSheet(date)} />
+                <MonthDayCell key={day.date.toISOString()} day={day} onAddPost={(date) => openSheet(date)} onDuplicate={handleDuplicate} />
               ))}
             </div>
           </div>
