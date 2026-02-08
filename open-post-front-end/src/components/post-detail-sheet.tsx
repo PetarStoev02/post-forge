@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -384,15 +385,15 @@ export const PostDetailSheet = () => {
                   <PencilIcon className="mr-2 size-4" />
                   Edit
                 </Button>
-                <Button
+                <LoadingButton
                   variant="outline"
                   className="flex-1"
                   onClick={handleDuplicate}
-                  disabled={duplicateLoading}
+                  loading={duplicateLoading}
                 >
                   <CopyIcon className="mr-2 size-4" />
-                  {duplicateLoading ? "Duplicating..." : "Duplicate"}
-                </Button>
+                  Duplicate
+                </LoadingButton>
                 <Button
                   variant="outline"
                   className="flex-1"
@@ -420,13 +421,13 @@ export const PostDetailSheet = () => {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   className="flex-1"
                   onClick={handleSaveEdit}
-                  disabled={updateLoading}
+                  loading={updateLoading}
                 >
-                  {updateLoading ? "Saving..." : "Save Changes"}
-                </Button>
+                  Save Changes
+                </LoadingButton>
               </div>
             )}
 
@@ -439,13 +440,14 @@ export const PostDetailSheet = () => {
                 >
                   Cancel
                 </Button>
-                <Button
+                <LoadingButton
                   className="flex-1"
                   onClick={handleSaveReschedule}
-                  disabled={updateLoading || !rescheduleDate}
+                  disabled={!rescheduleDate}
+                  loading={updateLoading}
                 >
-                  {updateLoading ? "Saving..." : "Save New Schedule"}
-                </Button>
+                  Save New Schedule
+                </LoadingButton>
               </div>
             )}
           </SheetFooter>

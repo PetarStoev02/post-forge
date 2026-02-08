@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/loading-button"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
@@ -357,21 +358,22 @@ export const CreatePostSheet = () => {
             <p className="mb-2 w-full text-sm text-destructive">{errors.submit}</p>
           )}
           <div className="flex w-full gap-2">
-            <Button
+            <LoadingButton
               variant="outline"
               onClick={() => handleSubmit(true)}
-              disabled={loading}
+              loading={loading}
               className="flex-1"
             >
               Save Draft
-            </Button>
-            <Button
+            </LoadingButton>
+            <LoadingButton
               onClick={() => handleSubmit(false)}
-              disabled={loading || !scheduledDate}
+              disabled={!scheduledDate}
+              loading={loading}
               className="flex-1"
             >
-              {loading ? "Scheduling..." : "Schedule"}
-            </Button>
+              Schedule
+            </LoadingButton>
           </div>
         </SheetFooter>
       </SheetContent>

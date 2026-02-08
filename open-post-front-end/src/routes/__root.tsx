@@ -2,6 +2,7 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-r
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ApolloProvider } from '@apollo/client/react'
+import { AlertCircleIcon } from 'lucide-react'
 
 import { apolloClient } from '@/lib/apollo-client'
 import { AppSidebar } from '@/components/app-sidebar'
@@ -10,8 +11,31 @@ import { CreatePostProvider } from '@/contexts/create-post-context'
 import { CreatePostSheet } from '@/components/create-post-sheet'
 import { PostActionsProvider } from '@/contexts/post-actions-context'
 import { PostDetailSheet } from '@/components/post-detail-sheet'
+import { PageLoader } from '@/components/ui/page-loader'
+import { Button } from '@/components/ui/button'
 
 import appCss from '../styles.css?url'
+
+const RoutePendingComponent = () => (
+  <div className="flex h-full flex-1">
+    <PageLoader />
+  </div>
+)
+
+const RouteErrorComponent = ({ error }: { error: Error }) => (
+  <div className="flex h-full flex-1 flex-col items-center justify-center gap-4">
+    <div className="flex items-center gap-2 text-destructive">
+      <AlertCircleIcon className="size-6" />
+      <h2 className="text-lg font-semibold">Something went wrong</h2>
+    </div>
+    <p className="text-sm text-muted-foreground max-w-md text-center">
+      {error.message || "An unexpected error occurred"}
+    </p>
+    <Button variant="outline" onClick={() => window.location.reload()}>
+      Try Again
+    </Button>
+  </div>
+)
 
 const RootLayout = () => {
   return (
@@ -81,4 +105,7 @@ export const Route = createRootRoute({
 
   component: RootLayout,
   shellComponent: RootDocument,
+  pendingComponent: RoutePendingComponent,
+  errorComponent: RouteErrorComponent,
+  pendingMinMs: 200,
 })

@@ -38,6 +38,8 @@ import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { useCalendarStore } from "@/stores/calendar-store"
 import { GET_CALENDAR_POSTS, CREATE_POST, UPDATE_POST } from "@/graphql/operations/posts"
+import { LoadingIndicator } from "@/components/ui/loading-indicator"
+import { CalendarSkeleton } from "@/components/skeletons"
 import type { Platform as APIPlatform, PostStatus as APIPostStatus, GetCalendarPostsResponse, Post, CreatePostInput } from "@/types/post"
 
 type UpdatePostResponse = {
@@ -496,10 +498,13 @@ export const ContentCalendar = () => {
     return { startDate: formatDateKey(startDate), endDate: formatDateKey(endDate) }
   }, [currentDate, view])
 
-  const { data, loading } = useQuery<GetCalendarPostsResponse>(GET_CALENDAR_POSTS, {
+  const { data, loading, previousData } = useQuery<GetCalendarPostsResponse>(GET_CALENDAR_POSTS, {
     variables: dateRange,
     fetchPolicy: "cache-and-network",
   })
+
+  const displayData = data || previousData
+  const isInitialLoading = loading && !displayData
 
   const [updatePost] = useMutation<UpdatePostResponse>(UPDATE_POST, {
     update: (cache, { data: mutationData }) => {
@@ -544,8 +549,8 @@ export const ContentCalendar = () => {
   const postsMap = React.useMemo(() => {
     const map: Record<string, CalendarPost[]> = {}
 
-    if (data?.calendarPosts) {
-      for (const post of data.calendarPosts) {
+    if (displayData?.calendarPosts) {
+      for (const post of displayData.calendarPosts) {
         if (!post.scheduledAt) continue
 
         const dateKey = post.scheduledAt.split(/[T ]/)[0]
@@ -572,7 +577,7 @@ export const ContentCalendar = () => {
     }
 
     return map
-  }, [data])
+  }, [displayData])
 
   const weekDays = getWeekDays(currentDate, postsMap)
   const monthDays = getMonthDays(currentDate, postsMap)
@@ -655,7 +660,7 @@ export const ContentCalendar = () => {
               <span className="sr-only">Next {view}</span>
             </Button>
           </div>
-          {loading && <span className="text-sm text-muted-foreground">Loading...</span>}
+          {loading && !isInitialLoading && <LoadingIndicator size="md" />}
         </div>
         <div className="flex items-center gap-3">
           <ToggleGroup
@@ -678,61 +683,67 @@ export const ContentCalendar = () => {
         </div>
       </div>
 
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      {isInitialLoading ? (
         <div className="flex flex-1 flex-col overflow-auto">
-          {view === "week" ? (
-            <div className="flex min-w-[900px] flex-1 border-b">
-              <TimelineColumn />
-              {weekDays.map((day, index) => (
-                <WeekDayColumn
-                  key={day.date.toISOString()}
-                  day={day}
-                  dayName={dayNames[index]}
-                  onAddPost={(date) => openSheet(date)}
-                  onDuplicate={handleDuplicate}
-                  onMouseMove={handleMouseMove}
-                  draggingPostId={activePost?.id}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex min-w-[900px] flex-1 flex-col">
-              <div className="grid grid-cols-7 border-b">
-                {dayNames.map((name) => (
-                  <div
-                    key={name}
-                    className="border-r px-2 py-3 text-center text-sm font-medium text-muted-foreground last:border-r-0"
-                  >
-                    {name}
-                  </div>
-                ))}
-              </div>
-              <div
-                className="grid flex-1 grid-cols-7"
-                style={{ gridTemplateRows: `repeat(${Math.ceil(monthDays.length / 7)}, minmax(0, 1fr))` }}
-              >
-                {monthDays.map((day) => (
-                  <MonthDayCell
+          <CalendarSkeleton view={view} />
+        </div>
+      ) : (
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="flex flex-1 flex-col overflow-auto">
+            {view === "week" ? (
+              <div className="flex min-w-[900px] flex-1 border-b">
+                <TimelineColumn />
+                {weekDays.map((day, index) => (
+                  <WeekDayColumn
                     key={day.date.toISOString()}
                     day={day}
+                    dayName={dayNames[index]}
                     onAddPost={(date) => openSheet(date)}
                     onDuplicate={handleDuplicate}
+                    onMouseMove={handleMouseMove}
                     draggingPostId={activePost?.id}
                   />
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="flex min-w-[900px] flex-1 flex-col">
+                <div className="grid grid-cols-7 border-b">
+                  {dayNames.map((name) => (
+                    <div
+                      key={name}
+                      className="border-r px-2 py-3 text-center text-sm font-medium text-muted-foreground last:border-r-0"
+                    >
+                      {name}
+                    </div>
+                  ))}
+                </div>
+                <div
+                  className="grid flex-1 grid-cols-7"
+                  style={{ gridTemplateRows: `repeat(${Math.ceil(monthDays.length / 7)}, minmax(0, 1fr))` }}
+                >
+                  {monthDays.map((day) => (
+                    <MonthDayCell
+                      key={day.date.toISOString()}
+                      day={day}
+                      onAddPost={(date) => openSheet(date)}
+                      onDuplicate={handleDuplicate}
+                      draggingPostId={activePost?.id}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-        <DragOverlay dropAnimation={null}>
-          {activePost && (
-            <div className="opacity-90 rotate-2">
-              <PostCard post={activePost} compact={view === "month"} isDragOverlay />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+          <DragOverlay dropAnimation={null}>
+            {activePost && (
+              <div className="opacity-90 rotate-2">
+                <PostCard post={activePost} compact={view === "month"} isDragOverlay />
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+      )}
     </div>
   )
 }
