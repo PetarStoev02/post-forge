@@ -19,4 +19,10 @@ type Query {
 
     "Get posts for calendar view within a date range"
     calendarPosts(startDate: Date!, endDate: Date!): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\CalendarPosts")
+
+    "Get dashboard statistics and data"
+    dashboardStats: DashboardStats! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\DashboardStats")
+
+    "Get posts for a specific date"
+    postsForDate(date: Date!): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\PostsForDate")
 }

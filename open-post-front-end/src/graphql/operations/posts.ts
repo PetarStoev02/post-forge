@@ -71,3 +71,31 @@ export const GET_CALENDAR_POSTS = gql`
   }
   ${POST_FRAGMENT}
 `;
+
+export const GET_DASHBOARD_STATS = gql`
+  query GetDashboardStats {
+    dashboardStats {
+      totalPostsCount
+      totalPostsThisMonth
+      totalPostsLastMonth
+      scheduledPostsCount
+      publishedPostsCount
+      draftPostsCount
+      upcomingPosts {
+        ...PostFields
+      }
+      scheduledDates
+      postDates
+    }
+  }
+  ${POST_FRAGMENT}
+`;
+
+export const GET_POSTS_FOR_DATE = gql`
+  query GetPostsForDate($date: Date!) {
+    postsForDate(date: $date) {
+      ...PostFields
+    }
+  }
+  ${POST_FRAGMENT}
+`;

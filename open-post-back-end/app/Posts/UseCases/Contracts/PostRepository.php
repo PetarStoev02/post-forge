@@ -20,4 +20,16 @@ interface PostRepository
     public function findByDateRange(string $startDate, string $endDate): Collection;
 
     public function findAll(): Collection;
+
+    public function countByStatus(string $status): int;
+
+    public function countByMonth(int $year, int $month): int;
+
+    public function getUpcomingScheduled(int $limit): Collection;
+
+    public function getScheduledDatesForMonth(int $year, int $month): array;
+
+    public function getPostDatesForMonth(int $year, int $month): array;
+
+    public function getPostsForDate(string $date): Collection;
 }

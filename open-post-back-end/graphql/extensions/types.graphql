@@ -24,3 +24,16 @@ type LinkPreview {
     description: String
     image: String
 }
+
+"Dashboard statistics and data"
+type DashboardStats {
+    totalPostsCount: Int!
+    totalPostsThisMonth: Int!
+    totalPostsLastMonth: Int!
+    scheduledPostsCount: Int!
+    publishedPostsCount: Int!
+    draftPostsCount: Int!
+    upcomingPosts: [Post!]!
+    scheduledDates: [String!]!
+    postDates: [String!]!
+}

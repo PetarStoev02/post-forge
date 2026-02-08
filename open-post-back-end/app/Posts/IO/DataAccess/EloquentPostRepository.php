@@ -49,4 +49,63 @@ final readonly class EloquentPostRepository implements PostRepository
             ->orderBy('created_at', 'desc')
             ->get();
     }
+
+    public function countByStatus(string $status): int
+    {
+        return Post::query()
+            ->withStatus($status)
+            ->count();
+    }
+
+    public function countByMonth(int $year, int $month): int
+    {
+        return Post::query()
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->count();
+    }
+
+    public function getUpcomingScheduled(int $limit): Collection
+    {
+        return Post::query()
+            ->withStatus('scheduled')
+            ->where('scheduled_at', '>', now())
+            ->orderBy('scheduled_at', 'asc')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function getScheduledDatesForMonth(int $year, int $month): array
+    {
+        return Post::query()
+            ->withStatus('scheduled')
+            ->whereYear('scheduled_at', $year)
+            ->whereMonth('scheduled_at', $month)
+            ->selectRaw('DATE(scheduled_at) as date')
+            ->distinct()
+            ->pluck('date')
+            ->map(fn ($date) => $date instanceof \Carbon\Carbon ? $date->format('Y-m-d') : $date)
+            ->toArray();
+    }
+
+    public function getPostDatesForMonth(int $year, int $month): array
+    {
+        return Post::query()
+            ->whereNotNull('scheduled_at')
+            ->whereYear('scheduled_at', $year)
+            ->whereMonth('scheduled_at', $month)
+            ->selectRaw('DATE(scheduled_at) as date')
+            ->distinct()
+            ->pluck('date')
+            ->map(fn ($date) => $date instanceof \Carbon\Carbon ? $date->format('Y-m-d') : $date)
+            ->toArray();
+    }
+
+    public function getPostsForDate(string $date): Collection
+    {
+        return Post::query()
+            ->whereDate('scheduled_at', $date)
+            ->orderBy('scheduled_at', 'asc')
+            ->get();
+    }
 }
