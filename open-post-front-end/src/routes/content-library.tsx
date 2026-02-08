@@ -3,10 +3,6 @@ import { LibraryIcon, PlusIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/content-library")({
-  component: ContentLibraryPage,
-})
-
 const ContentLibraryPage = () => {
   return (
     <EmptyState
@@ -22,3 +18,7 @@ const ContentLibraryPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/content-library")({
+  component: ContentLibraryPage,
+})

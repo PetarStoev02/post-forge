@@ -2,10 +2,6 @@ import { createFileRoute } from "@tanstack/react-router"
 import { BarChart3Icon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 
-export const Route = createFileRoute("/analytics")({
-  component: AnalyticsPage,
-})
-
 const AnalyticsPage = () => {
   return (
     <EmptyState
@@ -15,3 +11,7 @@ const AnalyticsPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/analytics")({
+  component: AnalyticsPage,
+})

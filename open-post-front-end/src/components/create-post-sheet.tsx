@@ -35,7 +35,7 @@ const PLATFORM_OPTIONS = [
   { id: "LINKEDIN" as Platform, label: "LinkedIn", icon: LinkedinIcon, maxChars: 3000 },
 ]
 
-export function CreatePostSheet() {
+export const CreatePostSheet = () => {
   const { isOpen, closeSheet, preselectedDate } = useCreatePost()
 
   // Form state

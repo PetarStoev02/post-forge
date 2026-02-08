@@ -3,10 +3,6 @@ import { InstagramIcon, PlusIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/platforms/instagram")({
-  component: InstagramPage,
-})
-
 const InstagramPage = () => {
   return (
     <EmptyState
@@ -22,3 +18,7 @@ const InstagramPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/platforms/instagram")({
+  component: InstagramPage,
+})

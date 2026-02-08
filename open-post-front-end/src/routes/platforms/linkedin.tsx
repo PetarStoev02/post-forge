@@ -3,10 +3,6 @@ import { LinkedinIcon, PlusIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/platforms/linkedin")({
-  component: LinkedinPage,
-})
-
 const LinkedinPage = () => {
   return (
     <EmptyState
@@ -22,3 +18,7 @@ const LinkedinPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/platforms/linkedin")({
+  component: LinkedinPage,
+})

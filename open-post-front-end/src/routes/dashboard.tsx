@@ -2,10 +2,6 @@ import { createFileRoute } from "@tanstack/react-router"
 import { LayoutDashboardIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 
-export const Route = createFileRoute("/dashboard")({
-  component: DashboardPage,
-})
-
 const DashboardPage = () => {
   return (
     <EmptyState
@@ -15,3 +11,7 @@ const DashboardPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardPage,
+})

@@ -85,7 +85,7 @@ const platformItems = [
   },
 ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const location = useLocation()
   const { openSheet } = useCreatePost()
 

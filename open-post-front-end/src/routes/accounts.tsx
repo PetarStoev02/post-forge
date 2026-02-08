@@ -3,10 +3,6 @@ import { UsersIcon, PlusIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/accounts")({
-  component: AccountsPage,
-})
-
 const AccountsPage = () => {
   return (
     <EmptyState
@@ -22,3 +18,7 @@ const AccountsPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/accounts")({
+  component: AccountsPage,
+})

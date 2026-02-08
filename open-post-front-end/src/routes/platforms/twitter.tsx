@@ -3,10 +3,6 @@ import { TwitterIcon, PlusIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 
-export const Route = createFileRoute("/platforms/twitter")({
-  component: TwitterPage,
-})
-
 const TwitterPage = () => {
   return (
     <EmptyState
@@ -22,3 +18,7 @@ const TwitterPage = () => {
     />
   )
 }
+
+export const Route = createFileRoute("/platforms/twitter")({
+  component: TwitterPage,
+})

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 
-export function NavUser({
+export const NavUser = ({
   user,
 }: {
   user: {
@@ -28,7 +28,7 @@ export function NavUser({
     email: string
     avatar: string
   }
-}) {
+}) => {
   const { isMobile } = useSidebar()
 
   return (
