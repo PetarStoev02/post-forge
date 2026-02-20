@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ApolloProvider } from '@apollo/client/react'
 import { AlertCircleIcon } from 'lucide-react'
 
+import appCss from '../styles.css?url'
 import { apolloClient } from '@/lib/apollo-client'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -14,7 +15,6 @@ import { PostDetailSheet } from '@/components/post-detail-sheet'
 import { PageLoader } from '@/components/ui/page-loader'
 import { Button } from '@/components/ui/button'
 
-import appCss from '../styles.css?url'
 
 const RoutePendingComponent = () => (
   <div className="flex h-full flex-1">

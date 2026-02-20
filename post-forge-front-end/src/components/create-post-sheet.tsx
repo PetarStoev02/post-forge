@@ -3,22 +3,23 @@
 import * as React from "react"
 import { useMutation } from "@apollo/client/react"
 import {
-  TwitterIcon,
+  CalendarIcon,
   InstagramIcon,
   LinkedinIcon,
-  CalendarIcon,
+  TwitterIcon,
   XIcon,
 } from "lucide-react"
 
+import type { CreatePostInput, Platform } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
@@ -27,7 +28,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { CREATE_POST } from "@/graphql/operations/posts"
-import type { Platform, CreatePostInput } from "@/types/post"
 import { cn } from "@/lib/utils"
 
 const PLATFORM_OPTIONS = [
@@ -41,12 +41,12 @@ export const CreatePostSheet = () => {
 
   // Form state
   const [content, setContent] = React.useState("")
-  const [selectedPlatforms, setSelectedPlatforms] = React.useState<Platform[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = React.useState<Array<Platform>>([])
   const [scheduledDate, setScheduledDate] = React.useState<Date | undefined>(preselectedDate)
   const [scheduledTime, setScheduledTime] = React.useState("09:00")
-  const [hashtags, setHashtags] = React.useState<string[]>([])
+  const [hashtags, setHashtags] = React.useState<Array<string>>([])
   const [hashtagInput, setHashtagInput] = React.useState("")
-  const [mentions, setMentions] = React.useState<string[]>([])
+  const [mentions, setMentions] = React.useState<Array<string>>([])
   const [mentionInput, setMentionInput] = React.useState("")
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 

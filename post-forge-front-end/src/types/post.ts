@@ -11,12 +11,12 @@ export type LinkPreview = {
 export type Post = {
   id: string
   content: string
-  platforms: Platform[]
+  platforms: Array<Platform>
   status: PostStatus
   scheduledAt?: string | null
-  mediaUrls: string[]
-  hashtags: string[]
-  mentions: string[]
+  mediaUrls: Array<string>
+  hashtags: Array<string>
+  mentions: Array<string>
   linkPreview?: LinkPreview | null
   createdAt: string
   updatedAt: string
@@ -24,12 +24,12 @@ export type Post = {
 
 export type CreatePostInput = {
   content: string
-  platforms: Platform[]
+  platforms: Array<Platform>
   status?: PostStatus
   scheduledAt?: string
-  mediaUrls?: string[]
-  hashtags?: string[]
-  mentions?: string[]
+  mediaUrls?: Array<string>
+  hashtags?: Array<string>
+  mentions?: Array<string>
   linkPreview?: {
     url: string
     title?: string
@@ -40,12 +40,12 @@ export type CreatePostInput = {
 
 export type UpdatePostInput = {
   content?: string
-  platforms?: Platform[]
+  platforms?: Array<Platform>
   status?: PostStatus
   scheduledAt?: string
-  mediaUrls?: string[]
-  hashtags?: string[]
-  mentions?: string[]
+  mediaUrls?: Array<string>
+  hashtags?: Array<string>
+  mentions?: Array<string>
   linkPreview?: {
     url: string
     title?: string
@@ -56,11 +56,11 @@ export type UpdatePostInput = {
 
 // Query response types
 export type GetCalendarPostsResponse = {
-  calendarPosts: Post[]
+  calendarPosts: Array<Post>
 }
 
 export type GetPostsResponse = {
-  posts: Post[]
+  posts: Array<Post>
 }
 
 export type GetPostResponse = {
@@ -75,9 +75,9 @@ export type DashboardStats = {
   scheduledPostsCount: number
   publishedPostsCount: number
   draftPostsCount: number
-  upcomingPosts: Post[]
-  scheduledDates: string[]
-  postDates: string[]
+  upcomingPosts: Array<Post>
+  scheduledDates: Array<string>
+  postDates: Array<string>
 }
 
 export type GetDashboardStatsResponse = {
@@ -85,5 +85,5 @@ export type GetDashboardStatsResponse = {
 }
 
 export type GetPostsForDateResponse = {
-  postsForDate: Post[]
+  postsForDate: Array<Post>
 }

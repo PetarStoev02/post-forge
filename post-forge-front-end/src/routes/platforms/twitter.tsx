@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { TwitterIcon, PlusIcon } from "lucide-react"
+import { PlusIcon, TwitterIcon } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 

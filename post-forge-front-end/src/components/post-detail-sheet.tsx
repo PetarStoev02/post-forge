@@ -3,28 +3,29 @@
 import * as React from "react"
 import { useMutation } from "@apollo/client/react"
 import {
-  TwitterIcon,
+  AtSignIcon,
+  CalendarClockIcon,
+  CalendarIcon,
+  CopyIcon,
+  HashIcon,
   InstagramIcon,
   LinkedinIcon,
-  CalendarIcon,
-  HashIcon,
-  AtSignIcon,
   PencilIcon,
-  CopyIcon,
-  CalendarClockIcon,
   Trash2Icon,
+  TwitterIcon,
   XIcon,
 } from "lucide-react"
 
+import type { CreatePostInput, Platform, Post, UpdatePostInput } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Badge } from "@/components/ui/badge"
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet"
 import {
   AlertDialog,
@@ -49,8 +50,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, UPDATE_POST, CREATE_POST } from "@/graphql/operations/posts"
-import type { Platform, Post, UpdatePostInput, CreatePostInput } from "@/types/post"
+import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/graphql/operations/posts"
 import { cn } from "@/lib/utils"
 
 const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -108,9 +108,9 @@ export const PostDetailSheet = () => {
 
   // Edit mode state
   const [editContent, setEditContent] = React.useState("")
-  const [editPlatforms, setEditPlatforms] = React.useState<Platform[]>([])
-  const [editHashtags, setEditHashtags] = React.useState<string[]>([])
-  const [editMentions, setEditMentions] = React.useState<string[]>([])
+  const [editPlatforms, setEditPlatforms] = React.useState<Array<Platform>>([])
+  const [editHashtags, setEditHashtags] = React.useState<Array<string>>([])
+  const [editMentions, setEditMentions] = React.useState<Array<string>>([])
   const [hashtagInput, setHashtagInput] = React.useState("")
   const [mentionInput, setMentionInput] = React.useState("")
   const [editDate, setEditDate] = React.useState<Date | undefined>()
@@ -566,19 +566,19 @@ const ViewMode = ({ post }: { post: Post }) => {
 type EditModeProps = {
   content: string
   setContent: (content: string) => void
-  platforms: Platform[]
+  platforms: Array<Platform>
   togglePlatform: (platform: Platform) => void
   scheduledDate: Date | undefined
   setScheduledDate: (date: Date | undefined) => void
   scheduledTime: string
   setScheduledTime: (time: string) => void
-  hashtags: string[]
-  setHashtags: (hashtags: string[]) => void
+  hashtags: Array<string>
+  setHashtags: (hashtags: Array<string>) => void
   hashtagInput: string
   setHashtagInput: (input: string) => void
   addHashtag: () => void
-  mentions: string[]
-  setMentions: (mentions: string[]) => void
+  mentions: Array<string>
+  setMentions: (mentions: Array<string>) => void
   mentionInput: string
   setMentionInput: (input: string) => void
   addMention: () => void
@@ -604,7 +604,7 @@ const EditMode = ({
   setMentionInput,
   addMention,
 }: EditModeProps) => {
-  const PLATFORM_OPTIONS: { id: Platform; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  const PLATFORM_OPTIONS: Array<{ id: Platform; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: "TWITTER", label: "Twitter", icon: TwitterIcon },
     { id: "INSTAGRAM", label: "Instagram", icon: InstagramIcon },
     { id: "LINKEDIN", label: "LinkedIn", icon: LinkedinIcon },

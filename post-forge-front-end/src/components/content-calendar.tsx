@@ -1,29 +1,31 @@
 "use client"
 
 import * as React from "react"
-import { useQuery, useMutation } from "@apollo/client/react"
+import { useMutation, useQuery } from "@apollo/client/react"
 import {
   DndContext,
+  
   DragOverlay,
-  PointerSensor,
+  
   KeyboardSensor,
-  useSensor,
-  useSensors,
+  PointerSensor,
   useDraggable,
   useDroppable,
-  type DragEndEvent,
-  type DragStartEvent,
+  useSensor,
+  useSensors
 } from "@dnd-kit/core"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  PlusIcon,
-  MoreHorizontalIcon,
-  TwitterIcon,
   InstagramIcon,
   LinkedinIcon,
+  MoreHorizontalIcon,
+  PlusIcon,
+  TwitterIcon,
 } from "lucide-react"
+import type {DragEndEvent, DragStartEvent} from "@dnd-kit/core";
 
+import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -37,10 +39,9 @@ import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { useCalendarStore } from "@/stores/calendar-store"
-import { GET_CALENDAR_POSTS, CREATE_POST, UPDATE_POST } from "@/graphql/operations/posts"
+import { CREATE_POST, GET_CALENDAR_POSTS, UPDATE_POST } from "@/graphql/operations/posts"
 import { LoadingIndicator } from "@/components/ui/loading-indicator"
 import { CalendarSkeleton } from "@/components/skeletons"
-import type { Platform as APIPlatform, PostStatus as APIPostStatus, GetCalendarPostsResponse, Post, CreatePostInput } from "@/types/post"
 
 type UpdatePostResponse = {
   updatePost: Post
@@ -51,7 +52,7 @@ type PostStatus = "draft" | "scheduled" | "pending" | "published" | "cancelled" 
 
 type CalendarPost = {
   id: string
-  platforms: Platform[]
+  platforms: Array<Platform>
   time: string
   content: string
   status: PostStatus
@@ -63,7 +64,7 @@ type DayData = {
   dayNumber: number
   isToday: boolean
   isCurrentMonth: boolean
-  posts: CalendarPost[]
+  posts: Array<CalendarPost>
 }
 
 type DroppableData = {
@@ -177,7 +178,7 @@ const getHourFromTime = (timeString: string | null | undefined): number => {
   return date.getHours() + date.getMinutes() / 60
 }
 
-const getWeekDays = (date: Date, postsMap: Record<string, CalendarPost[]>): DayData[] => {
+const getWeekDays = (date: Date, postsMap: Record<string, Array<CalendarPost>>): Array<DayData> => {
   const today = new Date()
   const startOfWeek = new Date(date)
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
@@ -200,7 +201,7 @@ const getWeekDays = (date: Date, postsMap: Record<string, CalendarPost[]>): DayD
   })
 }
 
-const getMonthDays = (date: Date, postsMap: Record<string, CalendarPost[]>): DayData[] => {
+const getMonthDays = (date: Date, postsMap: Record<string, Array<CalendarPost>>): Array<DayData> => {
   const today = new Date()
   const year = date.getFullYear()
   const month = date.getMonth()
@@ -214,7 +215,7 @@ const getMonthDays = (date: Date, postsMap: Record<string, CalendarPost[]>): Day
   const endDate = new Date(lastDay)
   endDate.setDate(endDate.getDate() + (6 - lastDay.getDay()))
 
-  const days: DayData[] = []
+  const days: Array<DayData> = []
   const currentDate = new Date(startDate)
 
   while (currentDate <= endDate) {
@@ -547,7 +548,7 @@ export const ContentCalendar = () => {
   )
 
   const postsMap = React.useMemo(() => {
-    const map: Record<string, CalendarPost[]> = {}
+    const map: Record<string, Array<CalendarPost>> = {}
 
     if (displayData?.calendarPosts) {
       for (const post of displayData.calendarPosts) {

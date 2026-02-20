@@ -3,15 +3,15 @@
 import * as React from "react"
 import { Link, useLocation } from "@tanstack/react-router"
 import {
-  LayoutDashboardIcon,
-  CalendarIcon,
-  LibraryIcon,
   BarChart3Icon,
-  UsersIcon,
-  TwitterIcon,
+  CalendarIcon,
   InstagramIcon,
+  LayoutDashboardIcon,
+  LibraryIcon,
   LinkedinIcon,
   PlusIcon,
+  TwitterIcon,
+  UsersIcon,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"

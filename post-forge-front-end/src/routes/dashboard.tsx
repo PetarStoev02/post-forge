@@ -1,26 +1,27 @@
 "use client"
 
 import * as React from "react"
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useQuery, useMutation } from "@apollo/client/react"
+import { Link, createFileRoute } from "@tanstack/react-router"
+import { useMutation, useQuery } from "@apollo/client/react"
 import {
-  PlusIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-  TwitterIcon,
+  CalendarCheckIcon,
+  ClockIcon,
+  FileTextIcon,
+  ImageIcon,
   InstagramIcon,
   LinkedinIcon,
   PencilIcon,
-  Trash2Icon,
-  SparklesIcon,
-  ImageIcon,
+  PlusIcon,
   SettingsIcon,
+  SparklesIcon,
+  Trash2Icon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+  TwitterIcon,
   UsersIcon,
-  CalendarCheckIcon,
-  FileTextIcon,
-  ClockIcon,
 } from "lucide-react"
 
+import type { GetDashboardStatsResponse, Platform, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -38,8 +39,7 @@ import { cn } from "@/lib/utils"
 import { DashboardSkeleton } from "@/components/skeletons"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { GET_DASHBOARD_STATS, DELETE_POST } from "@/graphql/operations/posts"
-import type { GetDashboardStatsResponse, Post, Platform } from "@/types/post"
+import { DELETE_POST, GET_DASHBOARD_STATS } from "@/graphql/operations/posts"
 
 type StatCardProps = {
   title: string
@@ -135,7 +135,7 @@ const formatScheduledTime = (scheduledAt: string | null | undefined): string => 
 
 
 const ScheduledQueueItem = ({ post, onEdit, onDelete }: ScheduledQueueItemProps) => {
-  const primaryPlatform = post.platforms[0] as Platform
+  const primaryPlatform = post.platforms[0]
   const Icon = platformIcons[primaryPlatform] || FileTextIcon
 
   return (
