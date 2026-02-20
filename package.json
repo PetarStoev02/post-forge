@@ -1,0 +1,12 @@
+{
+  "name": "post-forge",
+  "private": true,
+  "description": "Open source social media scheduling platform for developers",
+  "scripts": {
+    "dev:backend": "cd post-forge-back-end && ./vendor/bin/sail up -d",
+    "dev:frontend": "cd post-forge-front-end && pnpm dev",
+    "build:frontend": "cd post-forge-front-end && pnpm build",
+    "test:backend": "cd post-forge-back-end && ./vendor/bin/sail artisan test",
+    "test:frontend": "cd post-forge-front-end && pnpm test"
+  }
+}

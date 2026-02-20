@@ -1,4 +1,4 @@
-# OpenPost API
+# PostForge API
 
 A GraphQL-first social media scheduling backend built with Laravel 11 using Clean Architecture principles.
 
@@ -24,8 +24,8 @@ A GraphQL-first social media scheduling backend built with Laravel 11 using Clea
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/openpost-api.git
-cd openpost-api
+git clone https://github.com/yourusername/post-forge.git
+cd post-forge/post-forge-back-end
 
 # Copy environment file
 cp .env.example .env
@@ -48,7 +48,7 @@ open http://localhost/graphiql
 
 ## Architecture
 
-OpenPost follows **Clean Architecture** (Uncle Bob) with strict layer separation:
+PostForge follows **Clean Architecture** (Uncle Bob) with strict layer separation:
 
 ```
 app/
@@ -276,7 +276,7 @@ mutation {
 DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
-DB_DATABASE=openpost
+DB_DATABASE=post_forge
 DB_USERNAME=sail
 DB_PASSWORD=password
 

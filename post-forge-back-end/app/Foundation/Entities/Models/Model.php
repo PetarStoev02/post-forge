@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 /**
- * Base Model class for all Eloquent models in OpenPost.
+ * Base Model class for all Eloquent models in PostForge.
  *
  * Uses ULIDs for primary keys instead of auto-incrementing integers
  * for better distributed system support and URL-friendliness.
