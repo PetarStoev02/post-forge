@@ -310,7 +310,9 @@ const AccountsPage = () => {
           {accounts.map((account) => {
             const Icon = platformIcons[account.platform] ?? XIcon
             const label = platformLabels[account.platform] ?? account.platform
-            const displayName = account.metadata?.name ?? account.metadata?.username ?? account.platformUserId
+            const displayName = account.metadata?.name
+              ?? (account.metadata?.username ? `@${account.metadata.username}` : null)
+              ?? "Connected"
             return (
               <Card key={account.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

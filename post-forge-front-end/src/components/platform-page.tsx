@@ -135,9 +135,13 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
                   <Icon className="size-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">Connected Account</CardTitle>
+                  <CardTitle className="text-base">
+                    {connectedAccount.metadata?.name ?? (connectedAccount.metadata?.username ? `@${connectedAccount.metadata.username}` : label)}
+                  </CardTitle>
                   <CardDescription>
-                    {connectedAccount.metadata?.name ?? connectedAccount.metadata?.username ?? connectedAccount.platformUserId}
+                    {connectedAccount.metadata?.name && connectedAccount.metadata?.username
+                      ? `@${connectedAccount.metadata.username}`
+                      : "Connected account"}
                   </CardDescription>
                 </div>
                 {connectedAccount.needsReconnect && (
