@@ -45,6 +45,12 @@ export const DELETE_POST = gql`
   }
 `;
 
+export const DELETE_THREADS_POST = gql`
+  mutation DeleteThreadsPost($platformPostId: String!) {
+    deleteThreadsPost(platformPostId: $platformPostId)
+  }
+`;
+
 export const PUBLISH_POST = gql`
   mutation PublishPost($id: ID!) {
     publishPost(id: $id) {
@@ -98,6 +104,21 @@ export const GET_DASHBOARD_STATS = gql`
     }
   }
   ${POST_FRAGMENT}
+`;
+
+export const GET_THREADS_POSTS = gql`
+  query GetThreadsPosts($limit: Int, $after: String) {
+    threadsPosts(limit: $limit, after: $after) {
+      posts {
+        platformPostId
+        text
+        timestamp
+        permalink
+      }
+      nextCursor
+      hasNextPage
+    }
+  }
 `;
 
 export const GET_POSTS_FOR_DATE = gql`

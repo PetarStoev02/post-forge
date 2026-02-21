@@ -54,6 +54,21 @@ type SocialAccountMetadata {
     avatar: String
 }
 
+"A post fetched directly from a platform API"
+type PlatformPost {
+    platformPostId: String!
+    text: String
+    timestamp: String!
+    permalink: String!
+}
+
+"Paginated response for platform posts"
+type PlatformPostsResponse {
+    posts: [PlatformPost!]!
+    nextCursor: String
+    hasNextPage: Boolean!
+}
+
 "A connected social account (OAuth)"
 type SocialAccount {
     id: ID!

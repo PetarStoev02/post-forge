@@ -33,4 +33,7 @@ type Mutation {
 
     "Publish a post to its target platforms immediately"
     publishPost(id: ID!): Post! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Mutations\\PublishPost")
+
+    "Delete a post directly from Threads by its platform post ID"
+    deleteThreadsPost(platformPostId: String!): Boolean! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Mutations\\DeleteThreadsPost")
 }

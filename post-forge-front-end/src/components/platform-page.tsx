@@ -2,8 +2,10 @@
 
 import * as React from "react"
 import { Link } from "@tanstack/react-router"
-import { useMutation, useQuery } from "@apollo/client/react"
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react"
+import { toast } from "sonner"
 import {
+  ExternalLinkIcon,
   FileTextIcon,
   LoaderIcon,
   PencilIcon,
@@ -12,7 +14,7 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
-import type { Platform, Post, GetPostsResponse } from "@/types/post"
+import type { GetPostsResponse, GetThreadsPostsResponse, Platform, PlatformPost, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,7 +33,7 @@ import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, GET_POSTS, PUBLISH_POST } from "@/graphql/operations/posts"
+import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POSTS, PUBLISH_POST } from "@/graphql/operations/posts"
 import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
 
 type SocialAccount = {
@@ -64,6 +66,10 @@ const formatScheduledTime = (scheduledAt: string | null | undefined): string => 
   })
 }
 
+type UnifiedPost =
+  | { kind: "live"; post: PlatformPost }
+  | { kind: "local"; post: Post }
+
 type PlatformPageProps = {
   platform: Platform
 }
@@ -73,6 +79,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
   const { editPost } = usePostActions()
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [postToDelete, setPostToDelete] = React.useState<Post | null>(null)
+  const [livePostToDelete, setLivePostToDelete] = React.useState<PlatformPost | null>(null)
 
   const Icon = platformIcons[platform]
   const label = platformLabels[platform]
@@ -83,18 +90,83 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
     fetchPolicy: "cache-and-network",
   })
 
-  const { data: accountsData, loading: accountsLoading } = useQuery<{ socialAccounts: SocialAccount[] }>(GET_SOCIAL_ACCOUNTS)
+  const { data: accountsData, loading: accountsLoading } = useQuery<{ socialAccounts: Array<SocialAccount> }>(GET_SOCIAL_ACCOUNTS)
+
+  // Threads live posts
+  const [threadsPosts, setThreadsPosts] = React.useState<Array<PlatformPost>>([])
+  const [threadsNextCursor, setThreadsNextCursor] = React.useState<string | null>(null)
+  const [threadsHasNextPage, setThreadsHasNextPage] = React.useState(false)
+  const [threadsLoading, setThreadsLoading] = React.useState(false)
+
+  const [fetchThreadsPosts] = useLazyQuery<GetThreadsPostsResponse>(GET_THREADS_POSTS, {
+    fetchPolicy: "network-only",
+  })
+
+  const loadThreadsPosts = React.useCallback(async (after?: string | null) => {
+    setThreadsLoading(true)
+    try {
+      const { data } = await fetchThreadsPosts({
+        variables: { limit: 25, ...(after ? { after } : {}) },
+      })
+      if (data) {
+        const result = data.threadsPosts
+        setThreadsPosts((prev) => after ? [...prev, ...result.posts] : result.posts)
+        setThreadsNextCursor(result.nextCursor)
+        setThreadsHasNextPage(result.hasNextPage)
+      }
+    } finally {
+      setThreadsLoading(false)
+    }
+  }, [fetchThreadsPosts])
+
+  const connectedAccount = React.useMemo(() => {
+    return accountsData?.socialAccounts?.find((a) => a.platform === platform) ?? null
+  }, [accountsData, platform])
+
+  const isThreads = platform === "THREADS"
+  const hasConnectedThreads = isThreads && connectedAccount !== null && !connectedAccount.needsReconnect
+
+  React.useEffect(() => {
+    if (hasConnectedThreads) {
+      loadThreadsPosts()
+    }
+  }, [hasConnectedThreads, loadThreadsPosts])
+
+  const handleLoadMoreThreads = () => {
+    if (threadsNextCursor) {
+      loadThreadsPosts(threadsNextCursor)
+    }
+  }
+
+  // Refetch live posts after mutations
+  const refetchThreadsPosts = React.useCallback(() => {
+    if (hasConnectedThreads) {
+      loadThreadsPosts()
+    }
+  }, [hasConnectedThreads, loadThreadsPosts])
 
   const [deletePost, { loading: deleteLoading }] = useMutation(DELETE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
       setDeleteDialogOpen(false)
       setPostToDelete(null)
+      refetchThreadsPosts()
+    },
+  })
+
+  const [deleteThreadsPost, { loading: deleteThreadsLoading }] = useMutation(DELETE_THREADS_POST, {
+    onCompleted: () => {
+      setDeleteDialogOpen(false)
+      setLivePostToDelete(null)
+      refetchThreadsPosts()
     },
   })
 
   const [publishPost] = useMutation(PUBLISH_POST, {
     refetchQueries: "active",
+    onCompleted: () => {
+      refetchThreadsPosts()
+    },
   })
 
   const [publishingPostId, setPublishingPostId] = React.useState<string | null>(null)
@@ -108,23 +180,63 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
     }
   }
 
-  const connectedAccount = React.useMemo(() => {
-    return accountsData?.socialAccounts?.find((a) => a.platform === platform) ?? null
-  }, [accountsData, platform])
-
   const posts = postsData?.posts ?? []
 
+  // Build unified list for Threads: live posts + non-published local posts
+  const unifiedPosts = React.useMemo((): Array<UnifiedPost> => {
+    if (!hasConnectedThreads) return []
+
+    const items: Array<UnifiedPost> = []
+
+    // Add non-published local posts (drafts, scheduled, etc.)
+    for (const post of posts) {
+      if (post.status !== "PUBLISHED") {
+        items.push({ kind: "local", post })
+      }
+    }
+
+    // Add all live Threads posts
+    for (const tp of threadsPosts) {
+      items.push({ kind: "live", post: tp })
+    }
+
+    return items
+  }, [hasConnectedThreads, posts, threadsPosts])
+
   const handleDeleteClick = (post: Post) => {
+    setLivePostToDelete(null)
     setPostToDelete(post)
     setDeleteDialogOpen(true)
   }
 
+  const handleDeleteLiveClick = (post: PlatformPost) => {
+    setPostToDelete(null)
+    setLivePostToDelete(post)
+    setDeleteDialogOpen(true)
+  }
+
   const handleConfirmDelete = async () => {
-    if (!postToDelete) return
-    await deletePost({ variables: { id: postToDelete.id } })
+    try {
+      if (postToDelete) {
+        await deletePost({ variables: { id: postToDelete.id } })
+      } else if (livePostToDelete) {
+        await deleteThreadsPost({ variables: { platformPostId: livePostToDelete.platformPostId } })
+      }
+    } catch {
+      toast.error("Failed to delete post. Please try again.")
+      setDeleteDialogOpen(false)
+      setPostToDelete(null)
+      setLivePostToDelete(null)
+    }
   }
 
   const isLoading = postsLoading && !postsData
+
+  // For Threads with connected account, use unified list; otherwise use local posts
+  const showUnifiedList = hasConnectedThreads
+  const hasAnyContent = showUnifiedList
+    ? unifiedPosts.length > 0 || threadsLoading
+    : posts.length > 0
 
   return (
     <div className="flex h-full flex-col">
@@ -142,136 +254,137 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
         </Button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-6">
-        {/* Connected Account Card */}
-        {!accountsLoading && (
-          connectedAccount ? (
-            <Card>
-              <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
-                <div className={cn("flex size-10 items-center justify-center rounded-full bg-muted", color)}>
-                  <Icon className="size-5" />
-                </div>
-                <div>
-                  <CardTitle className="text-base">
-                    {connectedAccount.metadata?.name ?? (connectedAccount.metadata?.username ? `@${connectedAccount.metadata.username}` : label)}
-                  </CardTitle>
-                  <CardDescription>
-                    {connectedAccount.metadata?.name && connectedAccount.metadata?.username
-                      ? `@${connectedAccount.metadata.username}`
-                      : "Connected account"}
-                  </CardDescription>
-                </div>
-                {connectedAccount.needsReconnect && (
-                  <Badge variant="destructive" className="ml-auto">Needs Reconnect</Badge>
-                )}
-              </CardHeader>
-            </Card>
-          ) : (
-            <Card className="border-dashed">
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="space-y-6">
+          {/* Connected Account Card */}
+          {!accountsLoading && (
+            connectedAccount ? (
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                  <div className={cn("flex size-10 items-center justify-center rounded-full bg-muted", color)}>
                     <Icon className="size-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">No {label} account connected</p>
-                    <p className="text-xs text-muted-foreground">Connect your account to publish posts</p>
+                    <CardTitle className="text-base">
+                      {connectedAccount.metadata?.name ?? (connectedAccount.metadata?.username ? `@${connectedAccount.metadata.username}` : label)}
+                    </CardTitle>
+                    <CardDescription>
+                      {connectedAccount.metadata?.name && connectedAccount.metadata?.username
+                        ? `@${connectedAccount.metadata.username}`
+                        : "Connected account"}
+                    </CardDescription>
                   </div>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/accounts">
-                    <PlusIcon className="size-4" />
-                    Connect in Accounts
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )
-        )}
-
-        {/* Posts List */}
-        {isLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Loading posts...</p>
-          </div>
-        ) : posts.length === 0 ? (
-          <EmptyState
-            icon={<FileTextIcon className="size-8" />}
-            title={`No ${label} posts yet`}
-            description={`Create your first post for ${label} to see it here.`}
-            action={
-              <Button onClick={() => openSheet({ platforms: [platform], locked: true })}>
-                <PlusIcon className="size-4" />
-                Create Post
-              </Button>
-            }
-          />
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-muted-foreground">
-                {posts.length} {posts.length === 1 ? "post" : "posts"}
-              </h2>
-            </div>
-            {posts.map((post) => {
-              const statusStyle = statusStyles[post.status] ?? statusStyles.DRAFT
-              return (
-                <div
-                  key={post.id}
-                  className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2">
-                      <Badge variant="outline" className={cn("text-[10px] border", statusStyle.className)}>
-                        {statusStyle.label}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {formatScheduledTime(post.scheduledAt)}
-                      </span>
-                      {post.platforms.length > 1 && (
-                        <Badge variant="secondary" className="text-[10px]">
-                          +{post.platforms.length - 1} more
-                        </Badge>
-                      )}
+                  {connectedAccount.needsReconnect && (
+                    <Badge variant="destructive" className="ml-auto">Needs Reconnect</Badge>
+                  )}
+                </CardHeader>
+              </Card>
+            ) : (
+              <Card className="border-dashed">
+                <CardContent className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <Icon className="size-5" />
                     </div>
-                    <p className="line-clamp-2 text-sm">{post.content}</p>
+                    <div>
+                      <p className="text-sm font-medium">No {label} account connected</p>
+                      <p className="text-xs text-muted-foreground">Connect your account to publish posts</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {(post.status === "DRAFT" || post.status === "SCHEDULED") && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        disabled={publishingPostId === post.id}
-                        onClick={() => handlePublish(post)}
-                      >
-                        {publishingPostId === post.id ? (
-                          <LoaderIcon className="size-4 animate-spin" />
-                        ) : (
-                          <SendIcon className="size-4" />
-                        )}
-                        <span className="sr-only">Publish post</span>
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" className="size-8" onClick={() => editPost(post)}>
-                      <PencilIcon className="size-4" />
-                      <span className="sr-only">Edit post</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-destructive hover:text-destructive"
-                      onClick={() => handleDeleteClick(post)}
-                    >
-                      <Trash2Icon className="size-4" />
-                      <span className="sr-only">Delete post</span>
-                    </Button>
-                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/accounts">
+                      <PlusIcon className="size-4" />
+                      Connect in Accounts
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )
+          )}
+
+          {/* Posts List */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-sm text-muted-foreground">Loading posts...</p>
+            </div>
+          ) : !hasAnyContent ? (
+            <EmptyState
+              icon={<FileTextIcon className="size-8" />}
+              title={`No ${label} posts yet`}
+              description={`Create your first post for ${label} to see it here.`}
+              action={
+                <Button onClick={() => openSheet({ platforms: [platform], locked: true })}>
+                  <PlusIcon className="size-4" />
+                  Create Post
+                </Button>
+              }
+            />
+          ) : showUnifiedList ? (
+            /* Unified Threads list: local drafts + live posts */
+            <div className="space-y-3">
+              {threadsLoading && unifiedPosts.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <LoaderIcon className="size-5 animate-spin text-muted-foreground" />
                 </div>
-              )
-            })}
-          </div>
-        )}
+              ) : (
+                <>
+                  {unifiedPosts.map((item) =>
+                    item.kind === "local" ? (
+                      <LocalPostRow
+                        key={item.post.id}
+                        post={item.post}
+                        publishingPostId={publishingPostId}
+                        onPublish={handlePublish}
+                        onEdit={editPost}
+                        onDelete={handleDeleteClick}
+                      />
+                    ) : (
+                      <LivePostRow key={item.post.platformPostId} post={item.post} onDelete={handleDeleteLiveClick} />
+                    )
+                  )}
+                  {threadsHasNextPage && (
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleLoadMoreThreads}
+                        disabled={threadsLoading}
+                      >
+                        {threadsLoading ? (
+                          <>
+                            <LoaderIcon className="size-4 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          "Load More"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            /* Standard local posts list (non-Threads platforms) */
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  {posts.length} {posts.length === 1 ? "post" : "posts"}
+                </h2>
+              </div>
+              {posts.map((post) => (
+                <LocalPostRow
+                  key={post.id}
+                  post={post}
+                  publishingPostId={publishingPostId}
+                  onPublish={handlePublish}
+                  onEdit={editPost}
+                  onDelete={handleDeleteClick}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -287,14 +400,116 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              disabled={deleteLoading}
+              disabled={deleteLoading || deleteThreadsLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteLoading ? "Deleting..." : "Delete"}
+              {deleteLoading || deleteThreadsLoading ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  )
+}
+
+/* ── Row components ── */
+
+const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: PlatformPost) => void }) => (
+  <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50">
+    <div className="min-w-0 flex-1">
+      <div className="mb-1 flex items-center gap-2">
+        <Badge variant="outline" className="border text-[10px] bg-green-100 text-green-700 border-green-200">
+          Published
+        </Badge>
+        <span className="text-xs text-muted-foreground">
+          {formatScheduledTime(post.timestamp)}
+        </span>
+      </div>
+      <p className="line-clamp-2 text-sm">{post.text ?? ""}</p>
+    </div>
+    <div className="flex shrink-0 items-center gap-1">
+      <Button variant="ghost" size="icon" className="size-8" asChild>
+        <a href={post.permalink} target="_blank" rel="noopener noreferrer">
+          <ExternalLinkIcon className="size-4" />
+          <span className="sr-only">View on Threads</span>
+        </a>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-8 text-destructive hover:text-destructive"
+        onClick={() => onDelete(post)}
+      >
+        <Trash2Icon className="size-4" />
+        <span className="sr-only">Delete post</span>
+      </Button>
+    </div>
+  </div>
+)
+
+const LocalPostRow = ({
+  post,
+  publishingPostId,
+  onPublish,
+  onEdit,
+  onDelete,
+}: {
+  post: Post
+  publishingPostId: string | null
+  onPublish: (post: Post) => void
+  onEdit: (post: Post) => void
+  onDelete: (post: Post) => void
+}) => {
+  const statusStyle = statusStyles[post.status] ?? statusStyles.DRAFT
+  return (
+    <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <Badge variant="outline" className={cn("text-[10px] border", statusStyle.className)}>
+            {statusStyle.label}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {formatScheduledTime(post.scheduledAt)}
+          </span>
+          {post.platforms.length > 1 && (
+            <Badge variant="secondary" className="text-[10px]">
+              +{post.platforms.length - 1} more
+            </Badge>
+          )}
+        </div>
+        <p className="line-clamp-2 text-sm">{post.content}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {(post.status === "DRAFT" || post.status === "SCHEDULED") && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            disabled={publishingPostId === post.id}
+            onClick={() => onPublish(post)}
+          >
+            {publishingPostId === post.id ? (
+              <LoaderIcon className="size-4 animate-spin" />
+            ) : (
+              <SendIcon className="size-4" />
+            )}
+            <span className="sr-only">Publish post</span>
+          </Button>
+        )}
+        <Button variant="ghost" size="icon" className="size-8" onClick={() => onEdit(post)}>
+          <PencilIcon className="size-4" />
+          <span className="sr-only">Edit post</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 text-destructive hover:text-destructive"
+          onClick={() => onDelete(post)}
+        >
+          <Trash2Icon className="size-4" />
+          <span className="sr-only">Delete post</span>
+        </Button>
+      </div>
     </div>
   )
 }

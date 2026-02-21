@@ -27,6 +27,13 @@ type Query {
     postsForDate(date: Date!): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\PostsForDate")
 
     # ============================================
+    # PLATFORM POSTS QUERIES
+    # ============================================
+
+    "Fetch posts directly from the Threads API for the connected account"
+    threadsPosts(limit: Int, after: String): PlatformPostsResponse! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Queries\\ThreadsPosts")
+
+    # ============================================
     # SOCIAL ACCOUNTS QUERIES
     # ============================================
 

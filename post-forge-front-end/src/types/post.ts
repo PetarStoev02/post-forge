@@ -87,3 +87,21 @@ export type GetDashboardStatsResponse = {
 export type GetPostsForDateResponse = {
   postsForDate: Array<Post>
 }
+
+// Platform posts (fetched directly from platform API)
+export type PlatformPost = {
+  platformPostId: string
+  text: string | null
+  timestamp: string
+  permalink: string
+}
+
+export type PlatformPostsResponse = {
+  posts: Array<PlatformPost>
+  nextCursor: string | null
+  hasNextPage: boolean
+}
+
+export type GetThreadsPostsResponse = {
+  threadsPosts: PlatformPostsResponse
+}

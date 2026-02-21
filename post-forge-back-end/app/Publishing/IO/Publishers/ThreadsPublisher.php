@@ -7,6 +7,7 @@ namespace App\Publishing\IO\Publishers;
 use App\Posts\Entities\Models\Post;
 use App\SocialAccounts\Entities\Models\SocialAccount;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 use RuntimeException;
 
 final readonly class ThreadsPublisher implements PlatformPublisher
@@ -41,6 +42,9 @@ final readonly class ThreadsPublisher implements PlatformPublisher
             throw new RuntimeException('Threads API did not return a creation ID');
         }
 
+        // Wait for the media container to be ready
+        $this->waitForContainerReady($apiVersion, $creationId, $accessToken);
+
         // Step 2: Publish the media container
         $publishResponse = Http::post(
             self::BASE_URL . "/{$apiVersion}/{$userId}/threads_publish",
@@ -64,20 +68,80 @@ final readonly class ThreadsPublisher implements PlatformPublisher
         return (string) $postId;
     }
 
+    /**
+     * @return array{data: array<int, array<string, mixed>>, paging?: array<string, mixed>}
+     */
+    public function fetchThreads(SocialAccount $account, ?string $after = null, int $limit = 25): array
+    {
+        $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
+        $userId = $account->platform_user_id;
+        $accessToken = $account->access_token;
+
+        $params = [
+            'fields' => 'id,text,timestamp,permalink',
+            'limit' => $limit,
+            'access_token' => $accessToken,
+        ];
+
+        if ($after !== null) {
+            $params['after'] = $after;
+        }
+
+        $response = Http::get(
+            self::BASE_URL . "/{$apiVersion}/{$userId}/threads",
+            $params
+        );
+
+        if (! $response->successful()) {
+            $error = $response->json('error.message', 'Unknown error fetching Threads posts');
+            throw new RuntimeException("Threads API error (fetch): {$error}");
+        }
+
+        return $response->json();
+    }
+
     public function delete(string $platformPostId, SocialAccount $account): void
     {
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $accessToken = $account->access_token;
 
         $response = Http::delete(
-            self::BASE_URL . "/{$apiVersion}/{$platformPostId}",
-            ['access_token' => $accessToken]
+            self::BASE_URL . "/{$apiVersion}/{$platformPostId}?access_token={$accessToken}"
         );
 
         if (! $response->successful()) {
             $error = $response->json('error.message', 'Unknown error deleting Threads post');
             throw new RuntimeException("Threads API error (delete): {$error}");
         }
+    }
+
+    private function waitForContainerReady(string $apiVersion, string $containerId, string $accessToken): void
+    {
+        $maxAttempts = 10;
+
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $response = Http::get(
+                self::BASE_URL . "/{$apiVersion}/{$containerId}",
+                [
+                    'fields' => 'status',
+                    'access_token' => $accessToken,
+                ]
+            );
+
+            $status = $response->json('status');
+
+            if ($status === 'FINISHED') {
+                return;
+            }
+
+            if ($status === 'ERROR') {
+                throw new RuntimeException('Threads media container failed processing');
+            }
+
+            Sleep::for(2)->seconds();
+        }
+
+        throw new RuntimeException('Threads media container did not become ready in time');
     }
 
     private function buildText(Post $post): string
