@@ -4,9 +4,11 @@
 
 "Supported social media platforms"
 enum Platform {
+    FACEBOOK
     TWITTER
     INSTAGRAM
     LINKEDIN
+    THREADS
 }
 
 "Post status values"

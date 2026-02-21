@@ -4,9 +4,6 @@ import * as React from "react"
 import { useMutation } from "@apollo/client/react"
 import {
   CalendarIcon,
-  InstagramIcon,
-  LinkedinIcon,
-  TwitterIcon,
   XIcon,
 } from "lucide-react"
 
@@ -28,13 +25,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { CREATE_POST } from "@/graphql/operations/posts"
+import { platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
-const PLATFORM_OPTIONS = [
-  { id: "TWITTER" as Platform, label: "Twitter", icon: TwitterIcon, maxChars: 280 },
-  { id: "INSTAGRAM" as Platform, label: "Instagram", icon: InstagramIcon, maxChars: 2200 },
-  { id: "LINKEDIN" as Platform, label: "LinkedIn", icon: LinkedinIcon, maxChars: 3000 },
-]
+const PLATFORM_MAX_CHARS: Record<Platform, number> = {
+  FACEBOOK: 63206,
+  TWITTER: 280,
+  INSTAGRAM: 2200,
+  LINKEDIN: 3000,
+  THREADS: 500,
+}
+
+const PLATFORM_OPTIONS = (Object.keys(platformIcons) as Array<Platform>).map((id) => ({
+  id,
+  label: platformLabels[id],
+  icon: platformIcons[id],
+  maxChars: PLATFORM_MAX_CHARS[id],
+}))
 
 export const CreatePostSheet = () => {
   const { isOpen, closeSheet, preselectedDate } = useCreatePost()

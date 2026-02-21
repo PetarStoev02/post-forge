@@ -215,8 +215,10 @@ return [
             'App\\Identity\\IO\\GraphQL\\Queries',
             'App\\Teams\\IO\\GraphQL\\Queries',
             'App\\Posts\\IO\\GraphQL\\Queries',
+            'App\\SocialAccounts\\IO\\GraphQL\\Queries',
         ],
         'mutations' => [
+            'App\\Foundation\\IO\\GraphQL\\Mutations',
             'App\\Identity\\IO\\GraphQL\\Mutations',
             'App\\Teams\\IO\\GraphQL\\Mutations',
             'App\\Posts\\IO\\GraphQL\\Mutations',

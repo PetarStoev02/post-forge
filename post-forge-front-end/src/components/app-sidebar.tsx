@@ -5,10 +5,12 @@ import { Link, useLocation } from "@tanstack/react-router"
 import {
   BarChart3Icon,
   CalendarIcon,
+  Facebook,
   InstagramIcon,
   LayoutDashboardIcon,
   LibraryIcon,
   LinkedinIcon,
+  MessageCircle,
   PlusIcon,
   TwitterIcon,
   UsersIcon,
@@ -35,7 +37,7 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "", // No image: AvatarFallback (initials) is shown
   },
 }
 
@@ -69,14 +71,24 @@ const mainNavItems = [
 
 const platformItems = [
   {
-    title: "Twitter / X",
-    url: "/platforms/twitter",
-    icon: TwitterIcon,
+    title: "Facebook",
+    url: "/platforms/facebook",
+    icon: Facebook,
   },
   {
     title: "Instagram",
     url: "/platforms/instagram",
     icon: InstagramIcon,
+  },
+  {
+    title: "Threads",
+    url: "/platforms/threads",
+    icon: MessageCircle,
+  },
+  {
+    title: "Twitter / X",
+    url: "/platforms/twitter",
+    icon: TwitterIcon,
   },
   {
     title: "LinkedIn",

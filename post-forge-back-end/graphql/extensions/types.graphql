@@ -37,3 +37,23 @@ type DashboardStats {
     scheduledDates: [String!]!
     postDates: [String!]!
 }
+
+"OAuth provider credentials status (masked; for settings UI)"
+type OAuthProviderCredentials {
+    provider: String!
+    clientIdSet: Boolean!
+    clientIdMasked: String
+    clientSecretSet: Boolean!
+}
+
+"A connected social account (OAuth)"
+type SocialAccount {
+    id: ID!
+    workspaceId: ID! @rename(attribute: "workspace_id")
+    platform: Platform! @method(name: "platformForGraphQL")
+    platformUserId: String! @rename(attribute: "platform_user_id")
+    metadata: JSON
+    needsReconnect: Boolean! @method(name: "needsReconnect")
+    createdAt: DateTime! @rename(attribute: "created_at")
+    updatedAt: DateTime! @rename(attribute: "updated_at")
+}

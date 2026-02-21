@@ -1,4 +1,4 @@
-export type Platform = 'TWITTER' | 'INSTAGRAM' | 'LINKEDIN';
+export type Platform = 'FACEBOOK' | 'TWITTER' | 'INSTAGRAM' | 'LINKEDIN' | 'THREADS';
 export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PENDING' | 'PUBLISHED' | 'CANCELLED' | 'FAILED';
 
 export type LinkPreview = {

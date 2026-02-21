@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 /**
  * Main Application Service Provider.
@@ -33,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         // \App\Media\UseCases\Contracts\MediaRepository::class => \App\Media\IO\DataAccess\EloquentMediaRepository::class,
 
         // SocialAccounts Domain
-        // \App\SocialAccounts\UseCases\Contracts\SocialAccountRepository::class => \App\SocialAccounts\IO\DataAccess\EloquentSocialAccountRepository::class,
+        \App\SocialAccounts\UseCases\Contracts\SocialAccountRepository::class => \App\SocialAccounts\IO\DataAccess\EloquentSocialAccountRepository::class,
 
         // Publishing Domain
         // \App\Publishing\UseCases\Contracts\ScheduledPostRepository::class => \App\Publishing\IO\DataAccess\EloquentScheduledPostRepository::class,
@@ -52,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::listen(SocialiteWasCalled::class, [\SocialiteProviders\Instagram\InstagramExtendSocialite::class, 'handle']);
+        Event::listen(SocialiteWasCalled::class, [\SocialiteProviders\Threads\ThreadsExtendSocialite::class, 'handle']);
     }
 }

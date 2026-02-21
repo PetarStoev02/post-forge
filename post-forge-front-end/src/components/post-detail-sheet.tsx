@@ -8,11 +8,8 @@ import {
   CalendarIcon,
   CopyIcon,
   HashIcon,
-  InstagramIcon,
-  LinkedinIcon,
   PencilIcon,
   Trash2Icon,
-  TwitterIcon,
   XIcon,
 } from "lucide-react"
 
@@ -51,25 +48,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/graphql/operations/posts"
+import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
-
-const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  TWITTER: TwitterIcon,
-  INSTAGRAM: InstagramIcon,
-  LINKEDIN: LinkedinIcon,
-}
-
-const platformColors: Record<string, string> = {
-  TWITTER: "text-[#000000]",
-  INSTAGRAM: "text-[#E4405F]",
-  LINKEDIN: "text-[#0A66C2]",
-}
-
-const platformLabels: Record<string, string> = {
-  TWITTER: "Twitter",
-  INSTAGRAM: "Instagram",
-  LINKEDIN: "LinkedIn",
-}
 
 const statusStyles: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" },
@@ -604,11 +584,9 @@ const EditMode = ({
   setMentionInput,
   addMention,
 }: EditModeProps) => {
-  const PLATFORM_OPTIONS: Array<{ id: Platform; label: string; icon: React.ComponentType<{ className?: string }> }> = [
-    { id: "TWITTER", label: "Twitter", icon: TwitterIcon },
-    { id: "INSTAGRAM", label: "Instagram", icon: InstagramIcon },
-    { id: "LINKEDIN", label: "LinkedIn", icon: LinkedinIcon },
-  ]
+  const PLATFORM_OPTIONS: Array<{ id: Platform; label: string; icon: React.ComponentType<{ className?: string }> }> = (
+    Object.keys(platformIcons) as Array<Platform>
+  ).map((id) => ({ id, label: platformLabels[id], icon: platformIcons[id] }))
 
   return (
     <div className="space-y-5">

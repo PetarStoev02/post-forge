@@ -12,4 +12,18 @@ type Mutation {
 
     "Delete a post"
     deletePost(id: ID!): Boolean! @field(resolver: "App\\Posts\\IO\\GraphQL\\Mutations\\DeletePost")
+
+    # ============================================
+    # SOCIAL ACCOUNTS MUTATIONS
+    # ============================================
+
+    "Disconnect a social account"
+    disconnectSocialAccount(id: ID!): Boolean! @field(resolver: "App\\SocialAccounts\\IO\\GraphQL\\Mutations\\DisconnectSocialAccount")
+
+    # ============================================
+    # OAUTH CREDENTIALS (configure in app, not .env)
+    # ============================================
+
+    "Set OAuth credentials for a provider (provider: facebook | instagram | threads | x | linkedin-openid)"
+    setOAuthCredentials(provider: String!, clientId: String!, clientSecret: String!): Boolean! @field(resolver: "App\\Foundation\\IO\\GraphQL\\Mutations\\SetOAuthCredentials")
 }

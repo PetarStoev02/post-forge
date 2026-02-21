@@ -8,8 +8,6 @@ import {
   ClockIcon,
   FileTextIcon,
   ImageIcon,
-  InstagramIcon,
-  LinkedinIcon,
   PencilIcon,
   PlusIcon,
   SettingsIcon,
@@ -17,11 +15,10 @@ import {
   Trash2Icon,
   TrendingDownIcon,
   TrendingUpIcon,
-  TwitterIcon,
   UsersIcon,
 } from "lucide-react"
 
-import type { GetDashboardStatsResponse, Platform, Post } from "@/types/post"
+import type { GetDashboardStatsResponse, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -35,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { platformColors, platformIcons } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 import { DashboardSkeleton } from "@/components/skeletons"
 import { useCreatePost } from "@/contexts/create-post-context"
@@ -50,17 +48,6 @@ type StatCardProps = {
   subtitle?: string
 }
 
-const platformIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  TWITTER: TwitterIcon,
-  INSTAGRAM: InstagramIcon,
-  LINKEDIN: LinkedinIcon,
-}
-
-const platformColors: Record<string, string> = {
-  TWITTER: "text-black",
-  INSTAGRAM: "text-[#E4405F]",
-  LINKEDIN: "text-[#0A66C2]",
-}
 
 const StatCard = ({ title, value, icon, change, badge, subtitle }: StatCardProps) => (
   <Card>

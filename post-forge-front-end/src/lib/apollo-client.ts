@@ -1,7 +1,8 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
+import { GRAPHQL_URL } from '@/lib/config';
 
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://post-forge-back-end.test/graphql',
+  uri: GRAPHQL_URL,
   credentials: 'include',
 });
 
