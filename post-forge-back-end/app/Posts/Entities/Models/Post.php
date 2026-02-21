@@ -15,6 +15,7 @@ class Post extends Model
 
     protected $casts = [
         'platforms' => 'array',
+        'platform_post_ids' => 'array',
         'scheduled_at' => 'datetime',
         'media_urls' => 'array',
         'hashtags' => 'array',
@@ -23,6 +24,7 @@ class Post extends Model
     ];
 
     protected $attributes = [
+        'platform_post_ids' => '[]',
         'media_urls' => '[]',
         'hashtags' => '[]',
         'mentions' => '[]',
@@ -92,5 +94,13 @@ class Post extends Model
         return $query
             ->where('status', 'scheduled')
             ->where('scheduled_at', '<=', now());
+    }
+
+    /**
+     * Scope to filter posts by platform.
+     */
+    public function scopeForPlatform($query, string $platform)
+    {
+        return $query->whereJsonContains('platforms', strtolower($platform));
     }
 }

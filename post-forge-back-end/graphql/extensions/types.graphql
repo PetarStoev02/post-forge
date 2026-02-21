@@ -46,13 +46,21 @@ type OAuthProviderCredentials {
     clientSecretSet: Boolean!
 }
 
+"Social account metadata from OAuth provider"
+type SocialAccountMetadata {
+    name: String
+    username: String
+    email: String
+    avatar: String
+}
+
 "A connected social account (OAuth)"
 type SocialAccount {
     id: ID!
     workspaceId: ID! @rename(attribute: "workspace_id")
     platform: Platform! @method(name: "platformForGraphQL")
     platformUserId: String! @rename(attribute: "platform_user_id")
-    metadata: JSON
+    metadata: SocialAccountMetadata
     needsReconnect: Boolean! @method(name: "needsReconnect")
     createdAt: DateTime! @rename(attribute: "created_at")
     updatedAt: DateTime! @rename(attribute: "updated_at")

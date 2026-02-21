@@ -693,7 +693,7 @@ export const ContentCalendar = () => {
                     key={day.date.toISOString()}
                     day={day}
                     dayName={dayNames[index]}
-                    onAddPost={(date) => openSheet(date)}
+                    onAddPost={(date) => openSheet({ date })}
                     onDuplicate={handleDuplicate}
                     onMouseMove={handleMouseMove}
                     draggingPostId={activePost?.id}
@@ -720,7 +720,7 @@ export const ContentCalendar = () => {
                     <MonthDayCell
                       key={day.date.toISOString()}
                       day={day}
-                      onAddPost={(date) => openSheet(date)}
+                      onAddPost={(date) => openSheet({ date })}
                       onDuplicate={handleDuplicate}
                       draggingPostId={activePost?.id}
                     />

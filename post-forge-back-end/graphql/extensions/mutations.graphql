@@ -26,4 +26,11 @@ type Mutation {
 
     "Set OAuth credentials for a provider (provider: facebook | instagram | threads | x | linkedin-openid)"
     setOAuthCredentials(provider: String!, clientId: String!, clientSecret: String!): Boolean! @field(resolver: "App\\Foundation\\IO\\GraphQL\\Mutations\\SetOAuthCredentials")
+
+    # ============================================
+    # PUBLISHING MUTATIONS
+    # ============================================
+
+    "Publish a post to its target platforms immediately"
+    publishPost(id: ID!): Post! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Mutations\\PublishPost")
 }

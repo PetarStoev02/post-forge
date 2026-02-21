@@ -33,7 +33,13 @@ final class OAuthController
 
         $this->applyOAuthCredentialsFromDatabase($provider);
 
-        return Socialite::driver($provider)->redirect();
+        $driver = Socialite::driver($provider);
+
+        if ($provider === 'threads') {
+            $driver->scopes(['threads_content_publish', 'threads_manage_replies']);
+        }
+
+        return $driver->redirect();
     }
 
     /**
@@ -47,7 +53,7 @@ final class OAuthController
 
         $this->applyOAuthCredentialsFromDatabase($provider);
 
-        $socialiteUser = Socialite::driver($provider)->user();
+        $socialiteUser = Socialite::driver($provider)->stateless()->user();
         $workspace = Workspace::default();
         $platform = SupportedOAuthProvider::PLATFORM_MAP[$provider];
 
@@ -60,8 +66,8 @@ final class OAuthController
             workspaceId: $workspace->id,
             platform: $platform,
             platformUserId: (string) $socialiteUser->getId(),
-            accessToken: $socialiteUser->getToken(),
-            refreshToken: $socialiteUser->getRefreshToken(),
+            accessToken: $socialiteUser->token,
+            refreshToken: $socialiteUser->refreshToken,
             tokenExpiresAt: $tokenExpiresAt,
             metadata: $this->buildMetadata($socialiteUser)
         );

@@ -26,5 +26,7 @@ interface SocialAccountRepository
         ?array $metadata = null
     ): SocialAccount;
 
+    public function findByWorkspaceAndPlatform(string $workspaceId, string $platform): ?SocialAccount;
+
     public function delete(string $id): bool;
 }

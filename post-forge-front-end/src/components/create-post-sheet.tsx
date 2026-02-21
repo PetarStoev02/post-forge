@@ -44,7 +44,7 @@ const PLATFORM_OPTIONS = (Object.keys(platformIcons) as Array<Platform>).map((id
 }))
 
 export const CreatePostSheet = () => {
-  const { isOpen, closeSheet, preselectedDate } = useCreatePost()
+  const { isOpen, closeSheet, preselectedDate, preselectedPlatforms, platformLocked } = useCreatePost()
 
   // Form state
   const [content, setContent] = React.useState("")
@@ -83,6 +83,13 @@ export const CreatePostSheet = () => {
     }
   }, [preselectedDate])
 
+  // Set preselected platforms when provided
+  React.useEffect(() => {
+    if (preselectedPlatforms && preselectedPlatforms.length > 0) {
+      setSelectedPlatforms(preselectedPlatforms)
+    }
+  }, [preselectedPlatforms])
+
   const resetForm = () => {
     setContent("")
     setSelectedPlatforms([])
@@ -96,6 +103,7 @@ export const CreatePostSheet = () => {
   }
 
   const togglePlatform = (platform: Platform) => {
+    if (platformLocked) return
     setSelectedPlatforms((prev) =>
       prev.includes(platform)
         ? prev.filter((p) => p !== platform)
@@ -189,32 +197,53 @@ export const CreatePostSheet = () => {
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeSheet()}>
       <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-md">
         <SheetHeader className="border-b px-6 py-4">
-          <SheetTitle>Create Post</SheetTitle>
+          <SheetTitle>
+            {platformLocked && selectedPlatforms.length === 1
+              ? `Create ${platformLabels[selectedPlatforms[0]]} Post`
+              : "Create Post"}
+          </SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="space-y-5">
             {/* Platform Selection */}
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">PLATFORMS</Label>
-              <div className="flex gap-2">
-                {PLATFORM_OPTIONS.map((platform) => (
-                  <button
-                    key={platform.id}
-                    type="button"
-                    onClick={() => togglePlatform(platform.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
-                      selectedPlatforms.includes(platform.id)
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input hover:bg-muted"
-                    )}
-                  >
-                    <platform.icon className="size-3.5" />
-                    <span>{platform.label}</span>
-                  </button>
-                ))}
-              </div>
+              <Label className="text-xs font-medium text-muted-foreground">
+                {platformLocked ? "PLATFORM" : "PLATFORMS"}
+              </Label>
+              {platformLocked && selectedPlatforms.length === 1 ? (
+                <div className="flex gap-2">
+                  {(() => {
+                    const p = PLATFORM_OPTIONS.find((opt) => opt.id === selectedPlatforms[0])
+                    if (!p) return null
+                    return (
+                      <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
+                        <p.icon className="size-3.5" />
+                        {p.label}
+                      </Badge>
+                    )
+                  })()}
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  {PLATFORM_OPTIONS.map((platform) => (
+                    <button
+                      key={platform.id}
+                      type="button"
+                      onClick={() => togglePlatform(platform.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                        selectedPlatforms.includes(platform.id)
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input hover:bg-muted"
+                      )}
+                    >
+                      <platform.icon className="size-3.5" />
+                      <span>{platform.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {errors.platforms && (
                 <p className="text-xs text-destructive">{errors.platforms}</p>
               )}

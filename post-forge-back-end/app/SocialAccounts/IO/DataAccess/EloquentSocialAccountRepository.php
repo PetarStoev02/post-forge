@@ -47,6 +47,14 @@ final readonly class EloquentSocialAccountRepository implements SocialAccountRep
         );
     }
 
+    public function findByWorkspaceAndPlatform(string $workspaceId, string $platform): ?SocialAccount
+    {
+        return SocialAccount::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('platform', $platform)
+            ->first();
+    }
+
     public function delete(string $id): bool
     {
         return SocialAccount::destroy($id) > 0;

@@ -19,6 +19,10 @@ final readonly class ListPosts
      */
     public function __invoke(mixed $root, array $args): Collection
     {
+        if (isset($args['platform'])) {
+            return $this->postRepository->findByPlatform($args['platform']);
+        }
+
         return $this->postRepository->findAll();
     }
 }

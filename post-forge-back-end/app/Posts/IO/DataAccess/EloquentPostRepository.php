@@ -50,6 +50,14 @@ final readonly class EloquentPostRepository implements PostRepository
             ->get();
     }
 
+    public function findByPlatform(string $platform): Collection
+    {
+        return Post::query()
+            ->forPlatform($platform)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     public function countByStatus(string $status): int
     {
         return Post::query()

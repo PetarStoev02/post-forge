@@ -6,7 +6,12 @@ export const SOCIAL_ACCOUNT_FRAGMENT = gql`
     workspaceId
     platform
     platformUserId
-    metadata
+    metadata {
+      name
+      username
+      email
+      avatar
+    }
     needsReconnect
     createdAt
     updatedAt

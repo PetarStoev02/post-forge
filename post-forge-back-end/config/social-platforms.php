@@ -78,6 +78,21 @@ return [
         'api_version' => '202401',
     ],
 
+    'threads' => [
+        'name' => 'Threads',
+        'character_limit' => 500,
+        'media_rules' => [
+            'max_images' => 10,
+            'max_videos' => 1,
+            'max_image_size' => 8 * 1024 * 1024, // 8MB
+            'max_video_size' => 100 * 1024 * 1024, // 100MB
+            'allowed_types' => ['image', 'video'],
+            'image_formats' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+            'video_formats' => ['mp4', 'mov'],
+        ],
+        'api_version' => 'v1.0',
+    ],
+
     'tiktok' => [
         'name' => 'TikTok',
         'character_limit' => 2200,
