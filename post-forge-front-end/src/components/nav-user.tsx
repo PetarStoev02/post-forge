@@ -1,4 +1,7 @@
+import { useNavigate } from "@tanstack/react-router"
 import { BadgeCheckIcon, BellIcon, ChevronsUpDownIcon, CreditCardIcon, LogOutIcon, SparklesIcon } from "lucide-react"
+import { toast } from "sonner"
+
 import {
   Avatar,
   AvatarFallback,
@@ -30,6 +33,7 @@ export const NavUser = ({
   }
 }) => {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
 
   return (
     <SidebarMenu>
@@ -71,34 +75,29 @@ export const NavUser = ({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <SparklesIcon
-                />
+              <DropdownMenuItem onClick={() => toast.info("Coming soon")}>
+                <SparklesIcon />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheckIcon
-                />
+              <DropdownMenuItem onClick={() => navigate({ to: "/accounts" })}>
+                <BadgeCheckIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCardIcon
-                />
+              <DropdownMenuItem onClick={() => toast.info("Coming soon")}>
+                <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <BellIcon
-                />
+              <DropdownMenuItem onClick={() => toast.info("Coming soon")}>
+                <BellIcon />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
+            <DropdownMenuItem onClick={() => toast.info("Coming soon")}>
+              <LogOutIcon />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
