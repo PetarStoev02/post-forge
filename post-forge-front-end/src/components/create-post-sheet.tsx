@@ -7,6 +7,8 @@ import {
   XIcon,
 } from "lucide-react"
 
+import { toast } from "sonner"
+
 import type { CreatePostInput, Platform } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
@@ -61,10 +63,12 @@ export const CreatePostSheet = () => {
   const [createPost, { loading }] = useMutation(CREATE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post created")
       closeSheet()
       resetForm()
     },
     onError: (error: Error) => {
+      toast.error("Failed to create post")
       setErrors({ submit: error.message })
     },
   })

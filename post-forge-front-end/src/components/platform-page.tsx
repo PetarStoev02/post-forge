@@ -156,6 +156,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
   const [deletePost, { loading: deleteLoading }] = useMutation(DELETE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post deleted")
       setDeleteDialogOpen(false)
       setPostToDelete(null)
       refetchThreadsPosts()
@@ -164,6 +165,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
 
   const [deleteThreadsPost, { loading: deleteThreadsLoading }] = useMutation(DELETE_THREADS_POST, {
     onCompleted: () => {
+      toast.success("Post deleted")
       setDeleteDialogOpen(false)
       setLivePostToDelete(null)
       refetchThreadsPosts()
@@ -173,7 +175,11 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
   const [publishPost] = useMutation(PUBLISH_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post published")
       refetchThreadsPosts()
+    },
+    onError: () => {
+      toast.error("Failed to publish post")
     },
   })
 

@@ -18,6 +18,8 @@ import {
   UsersIcon,
 } from "lucide-react"
 
+import { toast } from "sonner"
+
 import type { GetDashboardStatsResponse, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -237,8 +239,12 @@ const DashboardPage = () => {
   const [deletePost, { loading: deleteLoading }] = useMutation(DELETE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post deleted")
       setDeleteDialogOpen(false)
       setPostToDelete(null)
+    },
+    onError: () => {
+      toast.error("Failed to delete post")
     },
   })
 

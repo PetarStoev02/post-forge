@@ -22,6 +22,7 @@ import {
   MoreHorizontalIcon,
   PlusIcon,
 } from "lucide-react"
+import { toast } from "sonner"
 import type {DragEndEvent, DragStartEvent} from "@dnd-kit/core";
 
 import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, GetThreadsCalendarPostsResponse, PlatformPost, Post } from "@/types/post"
@@ -560,10 +561,23 @@ export const ContentCalendar = () => {
         })
       }
     },
-    onError: (error) => console.error("Failed to reschedule post:", error),
+    onCompleted: () => {
+      toast.success("Post rescheduled")
+    },
+    onError: () => {
+      toast.error("Failed to reschedule")
+    },
   })
 
-  const [duplicatePostMutation] = useMutation(CREATE_POST, { refetchQueries: "active" })
+  const [duplicatePostMutation] = useMutation(CREATE_POST, {
+    refetchQueries: "active",
+    onCompleted: () => {
+      toast.success("Post duplicated")
+    },
+    onError: () => {
+      toast.error("Failed to duplicate")
+    },
+  })
 
   const handleDuplicate = React.useCallback(
     (post: Post) => {

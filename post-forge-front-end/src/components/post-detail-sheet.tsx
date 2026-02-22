@@ -13,6 +13,8 @@ import {
   XIcon,
 } from "lucide-react"
 
+import { toast } from "sonner"
+
 import type { CreatePostInput, Platform, Post, UpdatePostInput } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
@@ -106,25 +108,34 @@ export const PostDetailSheet = () => {
   const [deletePost, { loading: deleteLoading }] = useMutation(DELETE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post deleted")
       setDeleteDialogOpen(false)
       closePost()
+    },
+    onError: () => {
+      toast.error("Failed to delete post")
     },
   })
 
   const [updatePost, { loading: updateLoading }] = useMutation(UPDATE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post updated")
       setActionMode("view")
+    },
+    onError: () => {
+      toast.error("Failed to update post")
     },
   })
 
   const [duplicatePost, { loading: duplicateLoading }] = useMutation(CREATE_POST, {
     refetchQueries: "active",
     onCompleted: () => {
+      toast.success("Post duplicated")
       closePost()
     },
-    onError: (error) => {
-      console.error("Duplicate post error:", error)
+    onError: () => {
+      toast.error("Failed to duplicate post")
     },
   })
 
