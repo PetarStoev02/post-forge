@@ -3,6 +3,7 @@
 import { Link } from "@tanstack/react-router"
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
 
+import type { Platform } from "@/types/post"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -19,7 +20,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { platformIcons, platformLabels } from "@/lib/platforms"
-import type { Platform } from "@/types/post"
 
 type Account = {
   id: string

@@ -1,6 +1,6 @@
+import { PostCardSkeleton } from "./post-card-skeleton"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { PostCardSkeleton } from "./post-card-skeleton"
 
 const PlatformPageSkeleton = () => (
   <div className="flex h-full flex-col">
