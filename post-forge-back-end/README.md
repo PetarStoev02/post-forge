@@ -22,8 +22,8 @@ A GraphQL-first social media scheduling backend built with Laravel 11 using Clea
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/open-post.git
-cd open-post/post-forge-back-end
+git clone https://github.com/PetarStoev02/post-forge.git
+cd post-forge/post-forge-back-end
 
 # Copy environment file
 cp .env.example .env
@@ -46,7 +46,7 @@ open http://localhost/graphiql
 
 ## Architecture
 
-Open Post follows **Clean Architecture** (Uncle Bob) with strict layer separation:
+PostForge follows **Clean Architecture** (Uncle Bob) with strict layer separation:
 
 ```
 app/

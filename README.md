@@ -58,21 +58,21 @@ See [post-forge-back-end/README.md](post-forge-back-end/README.md) for detailed 
 
 If you use [Laravel Herd](https://herd.laravel.com) instead of Sail:
 
-1. **Herd site**: Add a site in Herd linked to `~/Code/open-post/post-forge-back-end`. The URL will be `http://post-forge-back-end.test`.
+1. **Herd site**: Add a site in Herd linked to `post-forge-back-end`. The URL will be `http://post-forge-back-end.test`.
 2. **MySQL**: In Herd, use (or rename) a MySQL service to **Post Forge** and note its port (e.g. 3309). In `post-forge-back-end/.env` set:
    - `APP_URL=http://post-forge-back-end.test` (or `https://` if you use Herd's HTTPS)
    - `DB_HOST=127.0.0.1`
    - `DB_PORT=3309` (or your Post Forge MySQL port)
    - `DB_USERNAME=root` and `DB_PASSWORD=` (or your Herd MySQL credentials)
    - `SANCTUM_STATEFUL_DOMAINS=post-forge-back-end.test,localhost,127.0.0.1`
-3. **Rename DB from open_post to post_forge** (one-time, if your existing DB is still named `open_post`): run `./scripts/rename-db-to-post-forge.sh` from `post-forge-back-end`. Otherwise run migrations: `cd post-forge-back-end && php artisan migrate`
+3. **Run migrations**: `cd post-forge-back-end && php artisan migrate`
 4. Frontend: the default GraphQL URL is already `http://post-forge-back-end.test/graphql`; run `pnpm dev` in `post-forge-front-end`.
 
 ## Frontend (React + shadcn/ui)
 
 The frontend is built with:
 
-- React 18
+- React 19
 - TypeScript
 - shadcn/ui
 - Tailwind CSS
