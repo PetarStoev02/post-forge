@@ -8,6 +8,8 @@ import appCss from '../styles.css?url'
 import { apolloClient } from '@/lib/apollo-client'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { CreatePostProvider } from '@/contexts/create-post-context'
 import { CreatePostSheet } from '@/components/create-post-sheet'
 import { PostActionsProvider } from '@/contexts/post-actions-context'
@@ -40,18 +42,21 @@ const RouteErrorComponent = ({ error }: { error: Error }) => (
 const RootLayout = () => {
   return (
     <ApolloProvider client={apolloClient}>
-      <CreatePostProvider>
-        <PostActionsProvider>
-          <SidebarProvider className="h-full">
-            <AppSidebar />
-            <SidebarInset className="h-full">
-              <Outlet />
-            </SidebarInset>
-          </SidebarProvider>
-          <CreatePostSheet />
-          <PostDetailSheet />
-        </PostActionsProvider>
-      </CreatePostProvider>
+      <TooltipProvider>
+        <CreatePostProvider>
+          <PostActionsProvider>
+            <SidebarProvider className="h-full">
+              <AppSidebar />
+              <SidebarInset className="h-full">
+                <Outlet />
+              </SidebarInset>
+            </SidebarProvider>
+            <CreatePostSheet />
+            <PostDetailSheet />
+            <Toaster />
+          </PostActionsProvider>
+        </CreatePostProvider>
+      </TooltipProvider>
     </ApolloProvider>
   )
 }
