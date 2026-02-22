@@ -33,6 +33,9 @@ type Query {
     "Fetch posts directly from the Threads API for the connected account"
     threadsPosts(limit: Int, after: String): PlatformPostsResponse! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Queries\\ThreadsPosts")
 
+    "Fetch Threads posts within a date range for calendar view"
+    threadsCalendarPosts(startDate: Date!, endDate: Date!): [PlatformPost!]! @field(resolver: "App\\Publishing\\IO\\GraphQL\\Queries\\ThreadsCalendarPosts")
+
     "Fetch per-post insights from the Threads API"
     threadsPostInsights(platformPostId: String!): ThreadsPostInsights @field(resolver: "App\\Publishing\\IO\\GraphQL\\Queries\\ThreadsPostInsights")
 

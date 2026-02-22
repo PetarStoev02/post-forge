@@ -122,6 +122,10 @@ export type PlatformPostsResponse = {
   hasNextPage: boolean
 }
 
+export type GetThreadsCalendarPostsResponse = {
+  threadsCalendarPosts: Array<PlatformPost>
+}
+
 export type GetThreadsPostsResponse = {
   threadsPosts: PlatformPostsResponse
 }

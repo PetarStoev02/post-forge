@@ -17,12 +17,14 @@ import {
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ExternalLinkIcon,
+  MessageCircle,
   MoreHorizontalIcon,
   PlusIcon,
 } from "lucide-react"
 import type {DragEndEvent, DragStartEvent} from "@dnd-kit/core";
 
-import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, Post } from "@/types/post"
+import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, GetThreadsCalendarPostsResponse, PlatformPost, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -37,7 +39,8 @@ import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { useCalendarStore } from "@/stores/calendar-store"
-import { CREATE_POST, GET_CALENDAR_POSTS, UPDATE_POST } from "@/graphql/operations/posts"
+import { CREATE_POST, GET_CALENDAR_POSTS, GET_THREADS_CALENDAR_POSTS, UPDATE_POST } from "@/graphql/operations/posts"
+import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
 import { LoadingIndicator } from "@/components/ui/loading-indicator"
 import { CalendarSkeleton } from "@/components/skeletons"
 
@@ -55,6 +58,8 @@ type CalendarPost = {
   content: string
   status: PostStatus
   fullPost: Post
+  source?: "local" | "platform"
+  permalink?: string
 }
 
 type DayData = {
@@ -235,13 +240,25 @@ const getMonthDays = (date: Date, postsMap: Record<string, Array<CalendarPost>>)
 const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }: PostCardProps) => {
   const { openPost, editPost, reschedulePost, deletePost } = usePostActions()
   const statusStyle = statusStyles[post.status]
+  const isPlatformPost = post.source === "platform"
+
+  const handleClick = () => {
+    if (isDragOverlay) return
+    if (isPlatformPost && post.permalink) {
+      window.open(post.permalink, "_blank", "noopener,noreferrer")
+    } else {
+      openPost(post.fullPost)
+    }
+  }
 
   if (compact) {
     return (
       <div
+        onClick={handleClick}
         className={cn(
-          "flex w-full flex-col gap-0.5 rounded border bg-card px-2 py-1.5 text-xs text-left transition-colors",
-          !isDragOverlay && "hover:bg-muted/50"
+          "flex w-full cursor-pointer flex-col gap-0.5 rounded border bg-card px-2 py-1.5 text-xs text-left transition-colors",
+          !isDragOverlay && "hover:bg-muted/50",
+          isPlatformPost && "border-primary/30 opacity-80"
         )}
       >
         <div className="flex items-center gap-1.5">
@@ -252,6 +269,7 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
             })}
           </div>
           <span className="text-muted-foreground">{post.time}</span>
+          {isPlatformPost && <ExternalLinkIcon className="ml-auto size-2.5 text-muted-foreground" />}
         </div>
         <span className="line-clamp-2 text-[11px] leading-tight">{post.content}</span>
       </div>
@@ -259,10 +277,14 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
   }
 
   return (
-    <div className={cn("rounded-lg border bg-card p-2.5 shadow-sm", isDragOverlay && "shadow-lg")}>
+    <div className={cn(
+      "rounded-lg border bg-card p-2.5 shadow-sm",
+      isDragOverlay && "shadow-lg",
+      isPlatformPost && "border-primary/30 opacity-85"
+    )}>
       <div className="mb-1.5 flex items-start justify-between gap-1">
         <button
-          onClick={() => !isDragOverlay && openPost(post.fullPost)}
+          onClick={handleClick}
           className="flex items-center gap-1.5 hover:opacity-70 transition-opacity min-w-0"
         >
           <div className="flex items-center gap-1 shrink-0">
@@ -272,8 +294,9 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
             })}
           </div>
           <span className="text-[11px] text-muted-foreground whitespace-nowrap">{post.time}</span>
+          {isPlatformPost && <ExternalLinkIcon className="size-3 text-muted-foreground" />}
         </button>
-        {!isDragOverlay && (
+        {!isDragOverlay && !isPlatformPost && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="size-5 shrink-0">
@@ -293,7 +316,7 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
         )}
       </div>
       <button
-        onClick={() => !isDragOverlay && openPost(post.fullPost)}
+        onClick={handleClick}
         className="mb-1.5 text-xs text-left w-full hover:opacity-70 transition-opacity break-words line-clamp-4"
       >
         {post.content}
@@ -306,9 +329,11 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
 }
 
 const DraggablePostCard = ({ post, compact = false, onDuplicate, isHidden = false }: DraggablePostCardProps) => {
+  const isPlatformPost = post.source === "platform"
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: post.id,
     data: { post, sourceDate: post.fullPost.scheduledAt },
+    disabled: isPlatformPost,
   })
 
   const shouldHide = isDragging || isHidden
@@ -325,7 +350,7 @@ const DraggablePostCard = ({ post, compact = false, onDuplicate, isHidden = fals
       style={style}
       {...attributes}
       {...listeners}
-      className={cn("cursor-grab", isDragging && "cursor-grabbing")}
+      className={cn(!isPlatformPost && "cursor-grab", isDragging && "cursor-grabbing")}
     >
       <PostCard post={post} compact={compact} onDuplicate={onDuplicate} />
     </div>
@@ -498,6 +523,17 @@ export const ContentCalendar = () => {
     fetchPolicy: "cache-and-network",
   })
 
+  // Check if Threads is connected
+  const { data: accountsData } = useQuery<{ socialAccounts: Array<{ platform: string }> }>(GET_SOCIAL_ACCOUNTS)
+  const hasThreadsAccount = accountsData?.socialAccounts?.some((a) => a.platform === "THREADS") ?? false
+
+  // Fetch Threads calendar posts if connected
+  const { data: threadsCalData } = useQuery<GetThreadsCalendarPostsResponse>(GET_THREADS_CALENDAR_POSTS, {
+    variables: dateRange,
+    fetchPolicy: "cache-and-network",
+    skip: !hasThreadsAccount,
+  })
+
   const displayData = data || previousData
   const isInitialLoading = loading && !displayData
 
@@ -556,23 +592,62 @@ export const ContentCalendar = () => {
           content: post.content,
           status: transformStatus(post.status),
           fullPost: post,
+          source: "local",
         }
 
         if (!map[dateKey]) map[dateKey] = []
         map[dateKey].push(calendarPost)
       }
+    }
 
-      for (const dateKey of Object.keys(map)) {
-        map[dateKey].sort((a, b) => {
-          const timeA = a.fullPost.scheduledAt ? new Date(a.fullPost.scheduledAt.replace(" ", "T")).getTime() : 0
-          const timeB = b.fullPost.scheduledAt ? new Date(b.fullPost.scheduledAt.replace(" ", "T")).getTime() : 0
-          return timeA - timeB
-        })
+    // Merge Threads platform posts
+    if (threadsCalData?.threadsCalendarPosts) {
+      for (const tp of threadsCalData.threadsCalendarPosts) {
+        const timestamp = tp.timestamp.replace(" ", "T")
+        const dateKey = timestamp.split("T")[0]
+        const time = formatTime(tp.timestamp)
+
+        // Create a stub Post object for the fullPost field
+        const stubPost: Post = {
+          id: `platform-${tp.platformPostId}`,
+          content: tp.text ?? "",
+          platforms: ["THREADS"],
+          status: "PUBLISHED",
+          scheduledAt: tp.timestamp,
+          mediaUrls: [],
+          hashtags: [],
+          mentions: [],
+          createdAt: tp.timestamp,
+          updatedAt: tp.timestamp,
+        }
+
+        const calendarPost: CalendarPost = {
+          id: `platform-${tp.platformPostId}`,
+          platforms: ["threads"],
+          time,
+          content: tp.text ?? "",
+          status: "published",
+          fullPost: stubPost,
+          source: "platform",
+          permalink: tp.permalink,
+        }
+
+        if (!map[dateKey]) map[dateKey] = []
+        map[dateKey].push(calendarPost)
       }
     }
 
+    // Sort all days
+    for (const dateKey of Object.keys(map)) {
+      map[dateKey].sort((a, b) => {
+        const timeA = a.fullPost.scheduledAt ? new Date(a.fullPost.scheduledAt.replace(" ", "T")).getTime() : 0
+        const timeB = b.fullPost.scheduledAt ? new Date(b.fullPost.scheduledAt.replace(" ", "T")).getTime() : 0
+        return timeA - timeB
+      })
+    }
+
     return map
-  }, [displayData])
+  }, [displayData, threadsCalData])
 
   const weekDays = getWeekDays(currentDate, postsMap)
   const monthDays = getMonthDays(currentDate, postsMap)
