@@ -254,7 +254,10 @@ const PostCard = ({ post, compact = false, onDuplicate, isDragOverlay = false }:
   if (compact) {
     return (
       <div
+        role="button"
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick() } }}
         className={cn(
           "flex w-full cursor-pointer flex-col gap-0.5 rounded border bg-card px-2 py-1.5 text-xs text-left transition-colors",
           !isDragOverlay && "hover:bg-muted/50",
