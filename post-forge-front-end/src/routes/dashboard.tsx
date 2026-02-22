@@ -290,17 +290,31 @@ const DashboardPage = () => {
           />
           <StatCard
             title="Engagement Rate"
-            value="4.2%"
+            value={
+              stats?.threadsEngagement?.engagementRate != null
+                ? `${stats.threadsEngagement.engagementRate}%`
+                : "N/A"
+            }
             icon={<TrendingUpIcon className="size-4" />}
-            subtitle="Placeholder - API integration pending"
-            badge={{ text: "Demo", variant: "secondary" }}
+            subtitle={
+              stats?.threadsEngagement
+                ? `${stats.threadsEngagement.totalEngagements.toLocaleString()} engagements / ${stats.threadsEngagement.views.toLocaleString()} views`
+                : "Connect Threads to see data"
+            }
           />
           <StatCard
-            title="Total Followers"
-            value="12.4K"
+            title="Total Views (30d)"
+            value={
+              stats?.threadsEngagement
+                ? stats.threadsEngagement.views.toLocaleString()
+                : "N/A"
+            }
             icon={<UsersIcon className="size-4" />}
-            subtitle="Placeholder - API integration pending"
-            badge={{ text: "Demo", variant: "secondary" }}
+            subtitle={
+              stats?.threadsEngagement
+                ? `${stats.threadsEngagement.likes.toLocaleString()} likes, ${stats.threadsEngagement.replies.toLocaleString()} replies`
+                : "Connect Threads to see data"
+            }
           />
           <StatCard
             title="Scheduled Posts"

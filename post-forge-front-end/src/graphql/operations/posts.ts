@@ -101,6 +101,15 @@ export const GET_DASHBOARD_STATS = gql`
       }
       scheduledDates
       postDates
+      threadsEngagement {
+        views
+        likes
+        replies
+        reposts
+        quotes
+        totalEngagements
+        engagementRate
+      }
     }
   }
   ${POST_FRAGMENT}
@@ -117,6 +126,18 @@ export const GET_THREADS_POSTS = gql`
       }
       nextCursor
       hasNextPage
+    }
+  }
+`;
+
+export const GET_THREADS_POST_INSIGHTS = gql`
+  query GetThreadsPostInsights($platformPostId: String!) {
+    threadsPostInsights(platformPostId: $platformPostId) {
+      views
+      likes
+      replies
+      reposts
+      quotes
     }
   }
 `;

@@ -100,6 +100,95 @@ final readonly class ThreadsPublisher implements PlatformPublisher
         return $response->json();
     }
 
+    /**
+     * Fetch per-post insights from the Threads API.
+     *
+     * @return array{views: int, likes: int, replies: int, reposts: int, quotes: int}
+     */
+    public function fetchPostInsights(string $mediaId, SocialAccount $account): array
+    {
+        $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
+        $accessToken = $account->access_token;
+
+        $response = Http::get(
+            self::BASE_URL . "/{$apiVersion}/{$mediaId}/insights",
+            [
+                'metric' => 'views,likes,replies,reposts,quotes',
+                'access_token' => $accessToken,
+            ]
+        );
+
+        if (! $response->successful()) {
+            $error = $response->json('error.message', 'Unknown error fetching Threads post insights');
+            throw new RuntimeException("Threads API error (post insights): {$error}");
+        }
+
+        return $this->parsePostInsights($response->json('data', []));
+    }
+
+    /**
+     * Fetch user-level aggregated insights from the Threads API.
+     *
+     * @return array{views: int, likes: int, replies: int, reposts: int, quotes: int}
+     */
+    public function fetchUserInsights(SocialAccount $account, string $since, string $until): array
+    {
+        $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
+        $userId = $account->platform_user_id;
+        $accessToken = $account->access_token;
+
+        $response = Http::get(
+            self::BASE_URL . "/{$apiVersion}/{$userId}/threads_insights",
+            [
+                'metric' => 'views,likes,replies,reposts,quotes',
+                'since' => $since,
+                'until' => $until,
+                'access_token' => $accessToken,
+            ]
+        );
+
+        if (! $response->successful()) {
+            $error = $response->json('error.message', 'Unknown error fetching Threads user insights');
+            throw new RuntimeException("Threads API error (user insights): {$error}");
+        }
+
+        return $this->parseUserInsights($response->json('data', []));
+    }
+
+    /**
+     * Parse post-level insights: data[].name + data[].values[0].value
+     */
+    private function parsePostInsights(array $data): array
+    {
+        $metrics = ['views' => 0, 'likes' => 0, 'replies' => 0, 'reposts' => 0, 'quotes' => 0];
+
+        foreach ($data as $item) {
+            $name = $item['name'] ?? null;
+            if ($name !== null && array_key_exists($name, $metrics)) {
+                $metrics[$name] = (int) ($item['values'][0]['value'] ?? 0);
+            }
+        }
+
+        return $metrics;
+    }
+
+    /**
+     * Parse user-level insights: data[].name + data[].total_value.value
+     */
+    private function parseUserInsights(array $data): array
+    {
+        $metrics = ['views' => 0, 'likes' => 0, 'replies' => 0, 'reposts' => 0, 'quotes' => 0];
+
+        foreach ($data as $item) {
+            $name = $item['name'] ?? null;
+            if ($name !== null && array_key_exists($name, $metrics)) {
+                $metrics[$name] = (int) ($item['total_value']['value'] ?? 0);
+            }
+        }
+
+        return $metrics;
+    }
+
     public function delete(string $platformPostId, SocialAccount $account): void
     {
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');

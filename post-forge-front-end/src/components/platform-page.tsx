@@ -5,16 +5,22 @@ import { Link } from "@tanstack/react-router"
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react"
 import { toast } from "sonner"
 import {
+  ChevronDownIcon,
   ExternalLinkIcon,
+  EyeIcon,
   FileTextIcon,
+  HeartIcon,
   LoaderIcon,
+  MessageCircleIcon,
   PencilIcon,
   PlusIcon,
+  QuoteIcon,
+  RepeatIcon,
   SendIcon,
   Trash2Icon,
 } from "lucide-react"
 
-import type { GetPostsResponse, GetThreadsPostsResponse, Platform, PlatformPost, Post } from "@/types/post"
+import type { GetPostsResponse, GetThreadsPostInsightsResponse, GetThreadsPostsResponse, Platform, PlatformPost, Post } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,12 +34,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { EmptyState } from "@/components/empty-state"
 import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POSTS, PUBLISH_POST } from "@/graphql/operations/posts"
+import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POST_INSIGHTS, GET_THREADS_POSTS, PUBLISH_POST } from "@/graphql/operations/posts"
 import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
 
 type SocialAccount = {
@@ -414,36 +421,94 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
 
 /* ── Row components ── */
 
-const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: PlatformPost) => void }) => (
-  <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50">
-    <div className="min-w-0 flex-1">
-      <div className="mb-1 flex items-center gap-2">
-        <Badge variant="outline" className="border text-[10px] bg-green-100 text-green-700 border-green-200">
-          Published
-        </Badge>
-        <span className="text-xs text-muted-foreground">
-          {formatScheduledTime(post.timestamp)}
-        </span>
+const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: PlatformPost) => void }) => {
+  const [open, setOpen] = React.useState(false)
+  const [hasFetched, setHasFetched] = React.useState(false)
+
+  const [fetchInsights, { data: insightsData, loading: insightsLoading }] = useLazyQuery<GetThreadsPostInsightsResponse>(
+    GET_THREADS_POST_INSIGHTS,
+    { fetchPolicy: "network-only" }
+  )
+
+  const handleToggle = (isOpen: boolean) => {
+    setOpen(isOpen)
+    if (isOpen && !hasFetched) {
+      setHasFetched(true)
+      fetchInsights({ variables: { platformPostId: post.platformPostId } })
+    }
+  }
+
+  const insights = insightsData?.threadsPostInsights
+
+  return (
+    <Collapsible open={open} onOpenChange={handleToggle}>
+      <div className="rounded-lg border transition-colors hover:bg-muted/50">
+        <div className="flex items-center gap-3 p-4">
+          <CollapsibleTrigger asChild>
+            <button type="button" className="flex shrink-0 items-center justify-center size-6 rounded hover:bg-muted">
+              <ChevronDownIcon className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleTrigger asChild>
+            <div className="min-w-0 flex-1 cursor-pointer">
+              <div className="mb-1 flex items-center gap-2">
+                <Badge variant="outline" className="border text-[10px] bg-green-100 text-green-700 border-green-200">
+                  Published
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {formatScheduledTime(post.timestamp)}
+                </span>
+              </div>
+              <p className="line-clamp-2 text-sm">{post.text ?? ""}</p>
+            </div>
+          </CollapsibleTrigger>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon" className="size-8" asChild>
+              <a href={post.permalink} target="_blank" rel="noopener noreferrer">
+                <ExternalLinkIcon className="size-4" />
+                <span className="sr-only">View on Threads</span>
+              </a>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-destructive hover:text-destructive"
+              onClick={() => onDelete(post)}
+            >
+              <Trash2Icon className="size-4" />
+              <span className="sr-only">Delete post</span>
+            </Button>
+          </div>
+        </div>
+        <CollapsibleContent>
+          <div className="border-t px-4 py-3">
+            {insightsLoading ? (
+              <div className="flex items-center justify-center py-3">
+                <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : insights ? (
+              <div className="grid grid-cols-5 gap-4">
+                <InsightMetric icon={<EyeIcon className="size-3.5" />} label="Views" value={insights.views} />
+                <InsightMetric icon={<HeartIcon className="size-3.5" />} label="Likes" value={insights.likes} />
+                <InsightMetric icon={<MessageCircleIcon className="size-3.5" />} label="Replies" value={insights.replies} />
+                <InsightMetric icon={<RepeatIcon className="size-3.5" />} label="Reposts" value={insights.reposts} />
+                <InsightMetric icon={<QuoteIcon className="size-3.5" />} label="Quotes" value={insights.quotes} />
+              </div>
+            ) : (
+              <p className="text-center text-xs text-muted-foreground py-2">Unable to load insights</p>
+            )}
+          </div>
+        </CollapsibleContent>
       </div>
-      <p className="line-clamp-2 text-sm">{post.text ?? ""}</p>
-    </div>
-    <div className="flex shrink-0 items-center gap-1">
-      <Button variant="ghost" size="icon" className="size-8" asChild>
-        <a href={post.permalink} target="_blank" rel="noopener noreferrer">
-          <ExternalLinkIcon className="size-4" />
-          <span className="sr-only">View on Threads</span>
-        </a>
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8 text-destructive hover:text-destructive"
-        onClick={() => onDelete(post)}
-      >
-        <Trash2Icon className="size-4" />
-        <span className="sr-only">Delete post</span>
-      </Button>
-    </div>
+    </Collapsible>
+  )
+}
+
+const InsightMetric = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) => (
+  <div className="flex flex-col items-center gap-1 text-center">
+    <div className="text-muted-foreground">{icon}</div>
+    <span className="text-sm font-semibold">{value.toLocaleString()}</span>
+    <span className="text-[10px] text-muted-foreground">{label}</span>
   </div>
 )
 

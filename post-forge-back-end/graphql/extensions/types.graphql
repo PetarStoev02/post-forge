@@ -36,6 +36,7 @@ type DashboardStats {
     upcomingPosts: [Post!]!
     scheduledDates: [String!]!
     postDates: [String!]!
+    threadsEngagement: ThreadsEngagement
 }
 
 "OAuth provider credentials status (masked; for settings UI)"
@@ -67,6 +68,26 @@ type PlatformPostsResponse {
     posts: [PlatformPost!]!
     nextCursor: String
     hasNextPage: Boolean!
+}
+
+"Per-post insights from the Threads API"
+type ThreadsPostInsights {
+    views: Int!
+    likes: Int!
+    replies: Int!
+    reposts: Int!
+    quotes: Int!
+}
+
+"Aggregated Threads engagement data (last 30 days)"
+type ThreadsEngagement {
+    views: Int!
+    likes: Int!
+    replies: Int!
+    reposts: Int!
+    quotes: Int!
+    totalEngagements: Int!
+    engagementRate: Float
 }
 
 "A connected social account (OAuth)"
