@@ -54,6 +54,12 @@ import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/graphql/operations/post
 import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
+const PLATFORM_MAX_CHARS: Record<Platform, number> = {
+  TWITTER: 280,
+  LINKEDIN: 3000,
+  THREADS: 500,
+}
+
 const statusStyles: Record<string, { label: string; className: string }> = {
   DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" },
   SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200" },
@@ -659,8 +665,22 @@ const EditMode = ({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={5}
-          className="resize-none"
+          className={cn(
+            "resize-none",
+            platforms.some((p) => content.length > (PLATFORM_MAX_CHARS[p] ?? 280)) && "border-destructive"
+          )}
         />
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          {platforms.map((p) => {
+            const max = PLATFORM_MAX_CHARS[p] ?? 280
+            const over = content.length > max
+            return (
+              <span key={p} className={cn(over && "text-destructive")}>
+                {platformLabels[p]}: {content.length}/{max}
+              </span>
+            )
+          })}
+        </div>
       </div>
 
       {/* Media */}

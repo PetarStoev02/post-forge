@@ -265,12 +265,21 @@ export const CreatePostSheet = () => {
                 rows={5}
                 className={cn("resize-none", isOverLimit && "border-destructive")}
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span className={cn(isOverLimit && "text-destructive")}>
-                  {charCount} / {charLimit}
-                </span>
-                {selectedPlatforms.length > 1 && (
-                  <span>Limit for smallest platform</span>
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                {selectedPlatforms.length > 1 ? (
+                  selectedPlatforms.map((p) => {
+                    const max = PLATFORM_MAX_CHARS[p]
+                    const over = charCount > max
+                    return (
+                      <span key={p} className={cn(over && "text-destructive")}>
+                        {platformLabels[p]}: {charCount}/{max}
+                      </span>
+                    )
+                  })
+                ) : (
+                  <span className={cn(isOverLimit && "text-destructive")}>
+                    {charCount} / {charLimit}
+                  </span>
                 )}
               </div>
               {errors.content && (
