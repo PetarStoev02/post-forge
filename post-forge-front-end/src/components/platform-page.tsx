@@ -44,6 +44,13 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { EmptyState } from "@/components/empty-state"
 import { PostCardSkeleton } from "@/components/skeletons"
 import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
@@ -110,11 +117,12 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
 
   const { data: accountsData, loading: accountsLoading } = useQuery<{ socialAccounts: Array<SocialAccount> }>(GET_SOCIAL_ACCOUNTS)
 
-  // Threads live posts
+  // Threads live posts with pagination
   const [threadsPosts, setThreadsPosts] = React.useState<Array<PlatformPost>>([])
-  const [threadsNextCursor, setThreadsNextCursor] = React.useState<string | null>(null)
   const [threadsHasNextPage, setThreadsHasNextPage] = React.useState(false)
   const [threadsLoading, setThreadsLoading] = React.useState(false)
+  const [threadsPage, setThreadsPage] = React.useState(1)
+  const [threadsCursors, setThreadsCursors] = React.useState<Array<string | null>>([null])
 
   const [fetchThreadsPosts] = useLazyQuery<GetThreadsPostsResponse>(GET_THREADS_POSTS, {
     fetchPolicy: "network-only",
@@ -128,14 +136,20 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
       })
       if (data) {
         const result = data.threadsPosts
-        setThreadsPosts((prev) => after ? [...prev, ...result.posts] : result.posts)
-        setThreadsNextCursor(result.nextCursor)
+        setThreadsPosts(result.posts)
         setThreadsHasNextPage(result.hasNextPage)
+        if (result.nextCursor) {
+          setThreadsCursors((prev) => {
+            const next = [...prev]
+            next[threadsPage] = result.nextCursor
+            return next
+          })
+        }
       }
     } finally {
       setThreadsLoading(false)
     }
-  }, [fetchThreadsPosts])
+  }, [fetchThreadsPosts, threadsPage])
 
   const connectedAccount = React.useMemo(() => {
     return accountsData?.socialAccounts?.find((a) => a.platform === platform) ?? null
@@ -150,15 +164,28 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
     }
   }, [hasConnectedThreads, loadThreadsPosts])
 
-  const handleLoadMoreThreads = () => {
-    if (threadsNextCursor) {
-      loadThreadsPosts(threadsNextCursor)
+  const handleThreadsNextPage = () => {
+    const cursor = threadsCursors[threadsPage]
+    if (cursor) {
+      setThreadsPage((p) => p + 1)
+      loadThreadsPosts(cursor)
+    }
+  }
+
+  const handleThreadsPrevPage = () => {
+    if (threadsPage > 1) {
+      const prevPage = threadsPage - 1
+      setThreadsPage(prevPage)
+      const cursor = prevPage === 1 ? null : threadsCursors[prevPage - 1]
+      loadThreadsPosts(cursor)
     }
   }
 
   // Refetch live posts after mutations
   const refetchThreadsPosts = React.useCallback(() => {
     if (hasConnectedThreads) {
+      setThreadsPage(1)
+      setThreadsCursors([null])
       loadThreadsPosts()
     }
   }, [hasConnectedThreads, loadThreadsPosts])
@@ -429,24 +456,26 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
                       )
                     )}
                   </div>
-                  {threadsHasNextPage && (
-                    <div className="flex justify-center pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleLoadMoreThreads}
-                        disabled={threadsLoading}
-                      >
-                        {threadsLoading ? (
-                          <>
-                            <LoaderIcon className="size-4 animate-spin" />
-                            Loading...
-                          </>
-                        ) : (
-                          "Load More"
-                        )}
-                      </Button>
-                    </div>
+                  {(threadsPage > 1 || threadsHasNextPage) && (
+                    <Pagination className="pt-4">
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={handleThreadsPrevPage}
+                            className={cn(threadsPage <= 1 && "pointer-events-none opacity-50")}
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <span className="px-3 text-sm text-muted-foreground">Page {threadsPage}</span>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={handleThreadsNextPage}
+                            className={cn(!threadsHasNextPage && "pointer-events-none opacity-50")}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   )}
                 </>
               )}
