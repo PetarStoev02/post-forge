@@ -315,7 +315,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
 
           {/* Posts List */}
           {isLoading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <PostCardSkeleton key={i} />
               ))}
@@ -341,7 +341,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3">
                     {unifiedPosts.map((item) =>
                       item.kind === "local" ? (
                         <LocalPostCard
@@ -388,7 +388,7 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
                   {posts.length} {posts.length === 1 ? "post" : "posts"}
                 </h2>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3">
                 {posts.map((post) => (
                   <LocalPostCard
                     key={post.id}
@@ -444,7 +444,7 @@ const LivePostCard = ({ post, onDelete }: { post: PlatformPost; onDelete: (post:
   const hasMedia = post.mediaType && post.mediaType !== "TEXT" && mediaThumb
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-colors hover:bg-muted/50">
+    <Card className="flex break-inside-avoid flex-col overflow-hidden transition-colors hover:bg-muted/50">
       {/* Media thumbnail */}
       {hasMedia && (
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
@@ -536,7 +536,7 @@ const LocalPostCard = ({
   const hasMedia = post.mediaUrls.length > 0
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-colors hover:bg-muted/50">
+    <Card className="flex break-inside-avoid flex-col overflow-hidden transition-colors hover:bg-muted/50">
       {/* Media thumbnail */}
       {hasMedia && (
         <div className="relative aspect-video w-full overflow-hidden bg-muted">

@@ -32,7 +32,7 @@ const PlatformPageSkeleton = () => (
         </div>
 
         {/* Post Cards Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <PostCardSkeleton key={i} />
           ))}
