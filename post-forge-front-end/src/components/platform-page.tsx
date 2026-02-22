@@ -5,11 +5,11 @@ import { Link } from "@tanstack/react-router"
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client/react"
 import { toast } from "sonner"
 import {
-  ChevronDownIcon,
   ExternalLinkIcon,
   EyeIcon,
   FileTextIcon,
   HeartIcon,
+  ImageIcon,
   LoaderIcon,
   MessageCircleIcon,
   PencilIcon,
@@ -34,7 +34,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EmptyState } from "@/components/empty-state"
 import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
@@ -84,7 +83,7 @@ type PlatformPageProps = {
 
 export const PlatformPage = ({ platform }: PlatformPageProps) => {
   const { openSheet } = useCreatePost()
-  const { editPost } = usePostActions()
+  const { openPost, editPost } = usePostActions()
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
   const [postToDelete, setPostToDelete] = React.useState<Post | null>(null)
   const [livePostToDelete, setLivePostToDelete] = React.useState<PlatformPost | null>(null)
@@ -332,29 +331,32 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
             />
           ) : showUnifiedList ? (
             /* Unified Threads list: local drafts + live posts */
-            <div className="space-y-3">
+            <div>
               {threadsLoading && unifiedPosts.length === 0 ? (
                 <div className="flex items-center justify-center py-8">
                   <LoaderIcon className="size-5 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <>
-                  {unifiedPosts.map((item) =>
-                    item.kind === "local" ? (
-                      <LocalPostRow
-                        key={item.post.id}
-                        post={item.post}
-                        publishingPostId={publishingPostId}
-                        onPublish={handlePublish}
-                        onEdit={editPost}
-                        onDelete={handleDeleteClick}
-                      />
-                    ) : (
-                      <LivePostRow key={item.post.platformPostId} post={item.post} onDelete={handleDeleteLiveClick} />
-                    )
-                  )}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {unifiedPosts.map((item) =>
+                      item.kind === "local" ? (
+                        <LocalPostCard
+                          key={item.post.id}
+                          post={item.post}
+                          publishingPostId={publishingPostId}
+                          onPublish={handlePublish}
+                          onOpen={openPost}
+                          onEdit={editPost}
+                          onDelete={handleDeleteClick}
+                        />
+                      ) : (
+                        <LivePostCard key={item.post.platformPostId} post={item.post} onDelete={handleDeleteLiveClick} />
+                      )
+                    )}
+                  </div>
                   {threadsHasNextPage && (
-                    <div className="flex justify-center pt-2">
+                    <div className="flex justify-center pt-4">
                       <Button
                         variant="outline"
                         size="sm"
@@ -376,23 +378,26 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
               )}
             </div>
           ) : (
-            /* Standard local posts list (non-Threads platforms) */
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
+            /* Standard local posts grid (non-Threads platforms) */
+            <div>
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-medium text-muted-foreground">
                   {posts.length} {posts.length === 1 ? "post" : "posts"}
                 </h2>
               </div>
-              {posts.map((post) => (
-                <LocalPostRow
-                  key={post.id}
-                  post={post}
-                  publishingPostId={publishingPostId}
-                  onPublish={handlePublish}
-                  onEdit={editPost}
-                  onDelete={handleDeleteClick}
-                />
-              ))}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {posts.map((post) => (
+                  <LocalPostCard
+                    key={post.id}
+                    post={post}
+                    publishingPostId={publishingPostId}
+                    onPublish={handlePublish}
+                    onOpen={openPost}
+                    onEdit={editPost}
+                    onDelete={handleDeleteClick}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -423,10 +428,9 @@ export const PlatformPage = ({ platform }: PlatformPageProps) => {
   )
 }
 
-/* ── Row components ── */
+/* ── Card components ── */
 
-const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: PlatformPost) => void }) => {
-  const [open, setOpen] = React.useState(false)
+const LivePostCard = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: PlatformPost) => void }) => {
   const [hasFetched, setHasFetched] = React.useState(false)
 
   const [fetchInsights, { data: insightsData, loading: insightsLoading }] = useLazyQuery<GetThreadsPostInsightsResponse>(
@@ -434,9 +438,8 @@ const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: 
     { fetchPolicy: "network-only" }
   )
 
-  const handleToggle = (isOpen: boolean) => {
-    setOpen(isOpen)
-    if (isOpen && !hasFetched) {
+  const handleCardClick = () => {
+    if (!hasFetched) {
       setHasFetched(true)
       fetchInsights({ variables: { platformPostId: post.platformPostId } })
     }
@@ -445,95 +448,107 @@ const LivePostRow = ({ post, onDelete }: { post: PlatformPost; onDelete: (post: 
   const insights = insightsData?.threadsPostInsights
 
   return (
-    <Collapsible open={open} onOpenChange={handleToggle}>
-      <div className="rounded-lg border transition-colors hover:bg-muted/50">
-        <div className="flex items-center gap-3 p-4">
-          <CollapsibleTrigger asChild>
-            <button type="button" className="flex shrink-0 items-center justify-center size-6 rounded hover:bg-muted">
-              <ChevronDownIcon className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-180")} />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleTrigger asChild>
-            <div className="min-w-0 flex-1 cursor-pointer">
-              <div className="mb-1 flex items-center gap-2">
-                <Badge variant="outline" className="border text-[10px] bg-green-100 text-green-700 border-green-200">
-                  Published
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {formatScheduledTime(post.timestamp)}
-                </span>
-              </div>
-              <p className="line-clamp-2 text-sm">{post.text ?? ""}</p>
-            </div>
-          </CollapsibleTrigger>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="icon" className="size-8" asChild>
-              <a href={post.permalink} target="_blank" rel="noopener noreferrer">
-                <ExternalLinkIcon className="size-4" />
-                <span className="sr-only">View on Threads</span>
-              </a>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 text-destructive hover:text-destructive"
-              onClick={() => onDelete(post)}
-            >
-              <Trash2Icon className="size-4" />
-              <span className="sr-only">Delete post</span>
-            </Button>
-          </div>
+    <Card className="flex flex-col overflow-hidden transition-colors hover:bg-muted/50">
+      <CardContent className="flex flex-1 flex-col gap-3 p-4" onClick={handleCardClick}>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border text-[10px] bg-green-100 text-green-700 border-green-200">
+            Published
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {formatScheduledTime(post.timestamp)}
+          </span>
         </div>
-        <CollapsibleContent>
-          <div className="border-t px-4 py-3">
+        <p className="line-clamp-3 flex-1 text-sm">{post.text ?? ""}</p>
+        {hasFetched && (
+          <div className="border-t pt-3">
             {insightsLoading ? (
-              <div className="flex items-center justify-center py-3">
+              <div className="flex items-center justify-center py-2">
                 <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
               </div>
             ) : insights ? (
-              <div className="grid grid-cols-5 gap-4">
-                <InsightMetric icon={<EyeIcon className="size-3.5" />} label="Views" value={insights.views} />
-                <InsightMetric icon={<HeartIcon className="size-3.5" />} label="Likes" value={insights.likes} />
-                <InsightMetric icon={<MessageCircleIcon className="size-3.5" />} label="Replies" value={insights.replies} />
-                <InsightMetric icon={<RepeatIcon className="size-3.5" />} label="Reposts" value={insights.reposts} />
-                <InsightMetric icon={<QuoteIcon className="size-3.5" />} label="Quotes" value={insights.quotes} />
+              <div className="grid grid-cols-5 gap-2">
+                <InsightMetric icon={<EyeIcon className="size-3" />} label="Views" value={insights.views} />
+                <InsightMetric icon={<HeartIcon className="size-3" />} label="Likes" value={insights.likes} />
+                <InsightMetric icon={<MessageCircleIcon className="size-3" />} label="Replies" value={insights.replies} />
+                <InsightMetric icon={<RepeatIcon className="size-3" />} label="Reposts" value={insights.reposts} />
+                <InsightMetric icon={<QuoteIcon className="size-3" />} label="Quotes" value={insights.quotes} />
               </div>
             ) : (
-              <p className="text-center text-xs text-muted-foreground py-2">Unable to load insights</p>
+              <p className="text-center text-xs text-muted-foreground">Unable to load insights</p>
             )}
           </div>
-        </CollapsibleContent>
+        )}
+      </CardContent>
+      <div className="flex items-center justify-end gap-1 border-t px-3 py-2">
+        <Button variant="ghost" size="icon" className="size-8" asChild>
+          <a href={post.permalink} target="_blank" rel="noopener noreferrer">
+            <ExternalLinkIcon className="size-4" />
+            <span className="sr-only">View on Threads</span>
+          </a>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 text-destructive hover:text-destructive"
+          onClick={() => onDelete(post)}
+        >
+          <Trash2Icon className="size-4" />
+          <span className="sr-only">Delete post</span>
+        </Button>
       </div>
-    </Collapsible>
+    </Card>
   )
 }
 
 const InsightMetric = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) => (
-  <div className="flex flex-col items-center gap-1 text-center">
+  <div className="flex flex-col items-center gap-0.5 text-center">
     <div className="text-muted-foreground">{icon}</div>
-    <span className="text-sm font-semibold">{value.toLocaleString()}</span>
+    <span className="text-xs font-semibold">{value.toLocaleString()}</span>
     <span className="text-[10px] text-muted-foreground">{label}</span>
   </div>
 )
 
-const LocalPostRow = ({
+const LocalPostCard = ({
   post,
   publishingPostId,
   onPublish,
+  onOpen,
   onEdit,
   onDelete,
 }: {
   post: Post
   publishingPostId: string | null
   onPublish: (post: Post) => void
+  onOpen: (post: Post) => void
   onEdit: (post: Post) => void
   onDelete: (post: Post) => void
 }) => {
   const statusStyle = statusStyles[post.status] ?? statusStyles.DRAFT
+  const hasMedia = post.mediaUrls.length > 0
+
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50">
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center gap-2">
+    <Card className="flex flex-col overflow-hidden transition-colors hover:bg-muted/50">
+      {/* Media thumbnail */}
+      {hasMedia && (
+        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+          <img
+            src={post.mediaUrls[0]}
+            alt=""
+            className="size-full object-cover"
+          />
+          {post.mediaUrls.length > 1 && (
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+              <ImageIcon className="size-3" />
+              {post.mediaUrls.length}
+            </div>
+          )}
+        </div>
+      )}
+      <CardContent
+        className="flex flex-1 cursor-pointer flex-col gap-3 p-4"
+        onClick={() => onOpen(post)}
+      >
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={cn("text-[10px] border", statusStyle.className)}>
             {statusStyle.label}
           </Badge>
@@ -546,9 +561,9 @@ const LocalPostRow = ({
             </Badge>
           )}
         </div>
-        <p className="line-clamp-2 text-sm">{post.content}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
+        <p className="line-clamp-3 flex-1 text-sm">{post.content}</p>
+      </CardContent>
+      <div className="flex items-center justify-end gap-1 border-t px-3 py-2">
         {(post.status === "DRAFT" || post.status === "SCHEDULED") && (
           <Button
             variant="ghost"
@@ -579,6 +594,6 @@ const LocalPostRow = ({
           <span className="sr-only">Delete post</span>
         </Button>
       </div>
-    </div>
+    </Card>
   )
 }
