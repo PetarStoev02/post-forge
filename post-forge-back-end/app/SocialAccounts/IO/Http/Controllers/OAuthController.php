@@ -36,7 +36,7 @@ final class OAuthController
         $driver = Socialite::driver($provider);
 
         if ($provider === 'threads') {
-            $driver->scopes(['threads_content_publish', 'threads_manage_replies']);
+            $driver->scopes(['threads_content_publish', 'threads_manage_replies', 'threads_delete']);
         }
 
         return $driver->redirect();
