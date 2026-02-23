@@ -14,8 +14,8 @@ type Query {
     "Get a single post by ID"
     post(id: ID!): Post @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\GetPost")
 
-    "Get all posts, optionally filtered by platform"
-    posts(platform: Platform): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\ListPosts")
+    "Get all posts, optionally filtered by platform and/or status"
+    posts(platform: Platform, status: PostStatus): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\ListPosts")
 
     "Get posts for calendar view within a date range"
     calendarPosts(startDate: Date!, endDate: Date!): [Post!]! @field(resolver: "App\\Posts\\IO\\GraphQL\\Queries\\CalendarPosts")

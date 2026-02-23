@@ -49,43 +49,52 @@ type StatCardProps = {
   change?: { value: number; type: "increase" | "decrease" }
   badge?: { text: string; variant: "default" | "secondary" | "destructive" | "outline" }
   subtitle?: string
+  href?: string
 }
 
 
-const StatCard = ({ title, value, icon, change, badge, subtitle }: StatCardProps) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between pb-2">
-      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-      <div className="text-muted-foreground">{icon}</div>
-    </CardHeader>
-    <CardContent>
-      <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-bold">{value}</span>
-        {badge && (
-          <Badge variant={badge.variant} className="text-[10px]">
-            {badge.text}
-          </Badge>
-        )}
-      </div>
-      {change && (
-        <div className={cn(
-          "mt-1 flex items-center gap-1 text-xs",
-          change.type === "increase" ? "text-green-600" : "text-red-600"
-        )}>
-          {change.type === "increase" ? (
-            <TrendingUpIcon className="size-3" />
-          ) : (
-            <TrendingDownIcon className="size-3" />
+const StatCard = ({ title, value, icon, change, badge, subtitle, href }: StatCardProps) => {
+  const card = (
+    <Card className={href ? "transition-colors hover:bg-muted/50" : undefined}>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <div className="text-muted-foreground">{icon}</div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold">{value}</span>
+          {badge && (
+            <Badge variant={badge.variant} className="text-[10px]">
+              {badge.text}
+            </Badge>
           )}
-          <span>{change.value}% from last month</span>
         </div>
-      )}
-      {subtitle && (
-        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
-      )}
-    </CardContent>
-  </Card>
-)
+        {change && (
+          <div className={cn(
+            "mt-1 flex items-center gap-1 text-xs",
+            change.type === "increase" ? "text-green-600" : "text-red-600"
+          )}>
+            {change.type === "increase" ? (
+              <TrendingUpIcon className="size-3" />
+            ) : (
+              <TrendingDownIcon className="size-3" />
+            )}
+            <span>{change.value}% from last month</span>
+          </div>
+        )}
+        {subtitle && (
+          <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+        )}
+      </CardContent>
+    </Card>
+  )
+
+  if (href) {
+    return <Link to={href}>{card}</Link>
+  }
+
+  return card
+}
 
 type ScheduledQueueItemProps = {
   post: Post
@@ -338,6 +347,7 @@ const DashboardPage = () => {
             value={stats?.scheduledPostsCount ?? 0}
             icon={<CalendarCheckIcon className="size-4" />}
             subtitle={`${stats?.draftPostsCount ?? 0} drafts, ${stats?.publishedPostsCount ?? 0} published`}
+            href="/content-library"
           />
         </div>
 

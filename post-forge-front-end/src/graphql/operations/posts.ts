@@ -70,8 +70,8 @@ export const GET_POST = gql`
 `;
 
 export const GET_POSTS = gql`
-  query GetPosts($platform: Platform) {
-    posts(platform: $platform) {
+  query GetPosts($platform: Platform, $status: PostStatus) {
+    posts(platform: $platform, status: $status) {
       ...PostFields
     }
   }

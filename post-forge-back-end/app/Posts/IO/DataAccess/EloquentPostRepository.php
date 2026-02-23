@@ -58,6 +58,14 @@ final readonly class EloquentPostRepository implements PostRepository
             ->get();
     }
 
+    public function findByStatus(string $status): Collection
+    {
+        return Post::query()
+            ->withStatus($status)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     public function countByStatus(string $status): int
     {
         return Post::query()

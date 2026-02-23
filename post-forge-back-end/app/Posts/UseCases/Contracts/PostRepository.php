@@ -23,6 +23,8 @@ interface PostRepository
 
     public function findByPlatform(string $platform): Collection;
 
+    public function findByStatus(string $status): Collection;
+
     public function countByStatus(string $status): int;
 
     public function countByMonth(int $year, int $month): int;
