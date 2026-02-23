@@ -15,6 +15,7 @@ import { CreatePostSheet } from '@/components/create-post-sheet'
 import { PostActionsProvider } from '@/contexts/post-actions-context'
 import { PostDetailSheet } from '@/components/post-detail-sheet'
 import { CommandPalette } from '@/components/command-palette'
+import { ReconnectDialog } from '@/components/reconnect-dialog'
 import { PageLoader } from '@/components/ui/page-loader'
 import { Button } from '@/components/ui/button'
 
@@ -46,15 +47,16 @@ const RootLayout = () => {
       <TooltipProvider>
         <CreatePostProvider>
           <PostActionsProvider>
-            <SidebarProvider className="h-full">
+            <SidebarProvider className="!min-h-0 h-svh">
               <AppSidebar />
-              <SidebarInset className="h-full">
+              <SidebarInset className="min-h-0 overflow-hidden">
                 <Outlet />
               </SidebarInset>
             </SidebarProvider>
             <CreatePostSheet />
             <PostDetailSheet />
             <CommandPalette />
+            <ReconnectDialog />
             <Toaster />
           </PostActionsProvider>
         </CreatePostProvider>

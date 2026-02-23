@@ -7,6 +7,7 @@ namespace App\Publishing\IO\Publishers;
 use App\Posts\Entities\Models\Post;
 use App\SocialAccounts\Entities\Models\SocialAccount;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 use RuntimeException;
 
@@ -16,6 +17,7 @@ final readonly class ThreadsPublisher implements PlatformPublisher
 
     public function publish(Post $post, SocialAccount $account): string
     {
+        $this->refreshTokenIfNeeded($account);
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $userId = $account->platform_user_id;
         $accessToken = $account->access_token;
@@ -73,6 +75,7 @@ final readonly class ThreadsPublisher implements PlatformPublisher
      */
     public function fetchThreads(SocialAccount $account, ?string $after = null, int $limit = 25): array
     {
+        $this->refreshTokenIfNeeded($account);
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $userId = $account->platform_user_id;
         $accessToken = $account->access_token;
@@ -107,6 +110,7 @@ final readonly class ThreadsPublisher implements PlatformPublisher
      */
     public function fetchPostInsights(string $mediaId, SocialAccount $account): array
     {
+        $this->refreshTokenIfNeeded($account);
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $accessToken = $account->access_token;
 
@@ -133,6 +137,7 @@ final readonly class ThreadsPublisher implements PlatformPublisher
      */
     public function fetchUserInsights(SocialAccount $account, string $since, string $until): array
     {
+        $this->refreshTokenIfNeeded($account);
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $userId = $account->platform_user_id;
         $accessToken = $account->access_token;
@@ -191,6 +196,7 @@ final readonly class ThreadsPublisher implements PlatformPublisher
 
     public function delete(string $platformPostId, SocialAccount $account): void
     {
+        $this->refreshTokenIfNeeded($account);
         $apiVersion = config('social-platforms.threads.api_version', 'v1.0');
         $accessToken = $account->access_token;
 
@@ -202,6 +208,42 @@ final readonly class ThreadsPublisher implements PlatformPublisher
             $error = $response->json('error.message', 'Unknown error deleting Threads post');
             throw new RuntimeException("Threads API error (delete): {$error}");
         }
+    }
+
+    /**
+     * Refresh the Threads long-lived token if it's about to expire.
+     *
+     * Threads long-lived tokens last ~60 days and can be refreshed as long as
+     * they are at least 24 hours old and not yet expired.
+     */
+    private function refreshTokenIfNeeded(SocialAccount $account): void
+    {
+        if (! $account->needsReconnect(withinMinutes: 60 * 24 * 7)) {
+            return; // More than 7 days left, no need to refresh
+        }
+
+        $response = Http::get(self::BASE_URL . '/refresh_access_token', [
+            'grant_type' => 'th_refresh_token',
+            'access_token' => $account->access_token,
+        ]);
+
+        if (! $response->successful()) {
+            Log::warning('Threads token refresh failed', [
+                'error' => $response->json('error.message', 'Unknown error'),
+                'account_id' => $account->id,
+            ]);
+
+            return;
+        }
+
+        $account->access_token = $response->json('access_token');
+
+        $expiresIn = $response->json('expires_in');
+        if ($expiresIn !== null) {
+            $account->token_expires_at = now()->addSeconds($expiresIn);
+        }
+
+        $account->save();
     }
 
     private function waitForContainerReady(string $apiVersion, string $containerId, string $accessToken): void

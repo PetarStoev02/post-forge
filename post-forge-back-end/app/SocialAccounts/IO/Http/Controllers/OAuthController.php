@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
@@ -68,16 +70,23 @@ final class OAuthController
         $workspace = Workspace::default();
         $platform = SupportedOAuthProvider::PLATFORM_MAP[$provider];
 
+        $accessToken = $socialiteUser->token;
         $tokenExpiresAt = null;
+
         if ($socialiteUser->expiresIn !== null) {
             $tokenExpiresAt = Carbon::now()->addSeconds($socialiteUser->expiresIn);
+        }
+
+        // Threads: exchange short-lived token for a long-lived token (~60 days)
+        if ($provider === 'threads') {
+            [$accessToken, $tokenExpiresAt] = $this->exchangeThreadsLongLivedToken($accessToken);
         }
 
         $this->socialAccountRepository->createOrUpdate(
             workspaceId: $workspace->id,
             platform: $platform,
             platformUserId: (string) $socialiteUser->getId(),
-            accessToken: $socialiteUser->token,
+            accessToken: $accessToken,
             refreshToken: $socialiteUser->refreshToken,
             tokenExpiresAt: $tokenExpiresAt,
             metadata: $this->buildMetadata($socialiteUser)
@@ -94,6 +103,41 @@ final class OAuthController
             'avatar' => $user->getAvatar(),
             'username' => $user->getNickname(),
         ]);
+    }
+
+    /**
+     * Exchange a short-lived Threads token for a long-lived one (~60 days).
+     *
+     * @return array{0: string, 1: Carbon|null}
+     */
+    private function exchangeThreadsLongLivedToken(string $shortLivedToken): array
+    {
+        $clientSecret = config('services.threads.client_secret');
+        $dbCredentials = $this->oauthCredentials->get('threads');
+        if ($dbCredentials !== null && ($dbCredentials['client_secret'] ?? '') !== '') {
+            $clientSecret = $dbCredentials['client_secret'];
+        }
+
+        $response = Http::get('https://graph.threads.net/access_token', [
+            'grant_type' => 'th_exchange_token',
+            'client_secret' => $clientSecret,
+            'access_token' => $shortLivedToken,
+        ]);
+
+        if (! $response->successful()) {
+            Log::warning('Threads long-lived token exchange failed', [
+                'error' => $response->json('error.message', 'Unknown error'),
+            ]);
+
+            // Fall back to the short-lived token
+            return [$shortLivedToken, null];
+        }
+
+        $longLivedToken = $response->json('access_token', $shortLivedToken);
+        $expiresIn = $response->json('expires_in');
+        $expiresAt = $expiresIn ? Carbon::now()->addSeconds($expiresIn) : null;
+
+        return [$longLivedToken, $expiresAt];
     }
 
     private function applyOAuthCredentialsFromDatabase(string $provider): void

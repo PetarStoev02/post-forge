@@ -7,6 +7,7 @@ namespace App\Publishing\IO\GraphQL\Queries;
 use App\Publishing\IO\Publishers\ThreadsPublisher;
 use App\SocialAccounts\Entities\Models\Workspace;
 use App\SocialAccounts\UseCases\Contracts\SocialAccountRepository;
+use Illuminate\Support\Facades\Log;
 
 final readonly class ThreadsPosts
 {
@@ -57,7 +58,12 @@ final readonly class ThreadsPosts
                 'nextCursor' => $nextCursor,
                 'hasNextPage' => $hasNextPage,
             ];
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('Failed to fetch Threads posts', [
+                'error' => $e->getMessage(),
+                'account_id' => $account->id,
+            ]);
+
             return $empty;
         }
     }
