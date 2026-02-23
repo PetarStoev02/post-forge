@@ -4,6 +4,19 @@ type UploadOptions = {
   onProgress?: (percent: number) => void
 }
 
+export const deleteMedia = async (url: string): Promise<void> => {
+  const response = await fetch(`${BACKEND_ORIGIN}/api/media`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ url }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to delete media")
+  }
+}
+
 export const uploadMedia = (file: File, options?: UploadOptions): Promise<string> => {
   return new Promise((resolve, reject) => {
     const formData = new FormData()

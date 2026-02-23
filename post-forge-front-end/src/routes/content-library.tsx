@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { useQuery } from "@apollo/client/react"
+import { useMutation, useQuery } from "@apollo/client/react"
 import {
   FileTextIcon,
   GridIcon,
@@ -10,12 +10,24 @@ import {
   LibraryIcon,
   ListIcon,
   PlusIcon,
+  Trash2Icon,
   VideoIcon,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import type { GetPostsResponse, Post, PostStatus } from "@/types/post"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
@@ -42,7 +54,8 @@ import {
 import { EmptyState } from "@/components/empty-state"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { GET_POSTS } from "@/graphql/operations/posts"
+import { DELETE_POST, GET_POSTS } from "@/graphql/operations/posts"
+import { deleteMedia } from "@/lib/upload-media"
 import { platformIcons, platformLabels } from "@/lib/platforms"
 import { cn } from "@/lib/utils"
 
@@ -93,6 +106,12 @@ const PostsTab = ({ statusFilter, onStatusFilterChange }: PostsTabProps) => {
     fetchPolicy: "cache-and-network",
   })
 
+  const [deletePost] = useMutation(DELETE_POST, {
+    refetchQueries: "active",
+    onCompleted: () => toast.success("Post deleted"),
+    onError: () => toast.error("Failed to delete post"),
+  })
+
   const posts = data?.posts ?? []
 
   return (
@@ -141,7 +160,12 @@ const PostsTab = ({ statusFilter, onStatusFilterChange }: PostsTabProps) => {
               {posts.length} {posts.length === 1 ? "post" : "posts"}
             </p>
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} onClick={() => editPost(post)} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onClick={() => editPost(post)}
+                onDelete={() => deletePost({ variables: { id: post.id } })}
+              />
             ))}
           </div>
         )}
@@ -153,45 +177,88 @@ const PostsTab = ({ statusFilter, onStatusFilterChange }: PostsTabProps) => {
 type PostCardProps = {
   post: Post
   onClick: () => void
+  onDelete: () => void
 }
 
-const PostCard = ({ post, onClick }: PostCardProps) => {
+const PostCard = ({ post, onClick, onDelete }: PostCardProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
   const style = statusStyles[post.status] ?? statusStyles.DRAFT
 
   return (
-    <button
-      type="button"
-      className="flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
-      onClick={onClick}
-    >
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className={cn("text-[10px]", style.className)}>
-            {style.label}
-          </Badge>
-          <div className="flex items-center gap-1">
-            {post.platforms.map((platform) => {
-              const Icon = platformIcons[platform]
-              return (
-                <span key={platform} className="text-muted-foreground" title={platformLabels[platform]}>
-                  <Icon className="size-3.5" />
-                </span>
-              )
-            })}
+    <>
+      <button
+        type="button"
+        className="flex w-full items-start gap-4 rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+        onClick={onClick}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn("text-[10px]", style.className)}>
+              {style.label}
+            </Badge>
+            <div className="flex items-center gap-1">
+              {post.platforms.map((platform) => {
+                const Icon = platformIcons[platform]
+                return (
+                  <span key={platform} className="text-muted-foreground" title={platformLabels[platform]}>
+                    <Icon className="size-3.5" />
+                  </span>
+                )
+              })}
+            </div>
           </div>
+          <p className="mt-1.5 line-clamp-2 text-sm">{post.content}</p>
+          {post.mediaUrls.length > 0 && (
+            <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <ImageIcon className="size-3" />
+              {post.mediaUrls.length} {post.mediaUrls.length === 1 ? "attachment" : "attachments"}
+            </div>
+          )}
         </div>
-        <p className="mt-1.5 line-clamp-2 text-sm">{post.content}</p>
-        {post.mediaUrls.length > 0 && (
-          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <ImageIcon className="size-3" />
-            {post.mediaUrls.length} {post.mediaUrls.length === 1 ? "attachment" : "attachments"}
-          </div>
-        )}
-      </div>
-      <div className="shrink-0 text-xs text-muted-foreground">
-        {formatDate(post.scheduledAt ?? post.createdAt)}
-      </div>
-    </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {formatDate(post.scheduledAt ?? post.createdAt)}
+          </span>
+          <span
+            role="button"
+            tabIndex={0}
+            className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowDeleteDialog(true)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation()
+                setShowDeleteDialog(true)
+              }
+            }}
+          >
+            <Trash2Icon className="size-4" />
+          </span>
+        </div>
+      </button>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this post and its media files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={onDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
@@ -210,10 +277,24 @@ const MediaTab = () => {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid")
   const [typeFilter, setTypeFilter] = React.useState<"all" | "image" | "video">("all")
   const [previewItem, setPreviewItem] = React.useState<MediaItem | null>(null)
+  const [deletingUrl, setDeletingUrl] = React.useState<string | null>(null)
 
-  const { data, loading } = useQuery<GetPostsResponse>(GET_POSTS, {
+  const { data, loading, refetch } = useQuery<GetPostsResponse>(GET_POSTS, {
     fetchPolicy: "cache-and-network",
   })
+
+  const handleDeleteMedia = async () => {
+    if (!deletingUrl) return
+    try {
+      await deleteMedia(deletingUrl)
+      toast.success("Media deleted")
+      await refetch()
+    } catch {
+      toast.error("Failed to delete media")
+    } finally {
+      setDeletingUrl(null)
+    }
+  }
 
   const mediaItems = React.useMemo((): Array<MediaItem> => {
     if (!data?.posts) return []
@@ -305,9 +386,28 @@ const MediaTab = () => {
                   <img src={item.url} alt="" className="w-full object-cover" loading="lazy" />
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                  <div className="flex items-center gap-1 text-[10px] text-white">
-                    {item.type === "video" ? <VideoIcon className="size-3" /> : <ImageIcon className="size-3" />}
-                    {item.type === "video" ? "Video" : "Image"}
+                  <div className="flex items-center justify-between text-[10px] text-white">
+                    <div className="flex items-center gap-1">
+                      {item.type === "video" ? <VideoIcon className="size-3" /> : <ImageIcon className="size-3" />}
+                      {item.type === "video" ? "Video" : "Image"}
+                    </div>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="rounded p-0.5 transition-colors hover:bg-white/20"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeletingUrl(item.url)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation()
+                          setDeletingUrl(item.url)
+                        }
+                      }}
+                    >
+                      <Trash2Icon className="size-3.5" />
+                    </span>
                   </div>
                 </div>
               </button>
@@ -321,6 +421,7 @@ const MediaTab = () => {
                 <TableHead>Type</TableHead>
                 <TableHead>Source Post</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -353,6 +454,19 @@ const MediaTab = () => {
                       year: "numeric",
                     })}
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeletingUrl(item.url)
+                      }}
+                    >
+                      <Trash2Icon className="size-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -379,6 +493,27 @@ const MediaTab = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Media Confirmation */}
+      <AlertDialog open={deletingUrl !== null} onOpenChange={(open) => !open && setDeletingUrl(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete media?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this file and remove it from its post. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteMedia}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

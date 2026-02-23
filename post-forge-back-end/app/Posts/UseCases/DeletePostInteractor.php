@@ -9,6 +9,7 @@ use App\Publishing\IO\Publishers\ThreadsPublisher;
 use App\SocialAccounts\Entities\Models\Workspace;
 use App\SocialAccounts\UseCases\Contracts\SocialAccountRepository;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 final readonly class DeletePostInteractor
 {
@@ -61,6 +62,23 @@ final readonly class DeletePostInteractor
                         'error' => $e->getMessage(),
                     ]);
                 }
+            }
+        }
+
+        // Clean up associated media files from disk
+        $mediaUrls = $post->media_urls ?? [];
+        foreach ($mediaUrls as $url) {
+            try {
+                $path = preg_replace('#^.*/storage/#', '', $url);
+                if ($path) {
+                    Storage::disk('public')->delete($path);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Failed to delete media file during post deletion', [
+                    'post_id' => $id,
+                    'url' => $url,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
