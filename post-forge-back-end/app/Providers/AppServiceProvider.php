@@ -41,6 +41,9 @@ class AppServiceProvider extends ServiceProvider
         // SocialAccounts Domain
         \App\SocialAccounts\UseCases\Contracts\SocialAccountRepository::class => \App\SocialAccounts\IO\DataAccess\EloquentSocialAccountRepository::class,
 
+        // Foundation Domain
+        \App\Foundation\Settings\Contracts\SettingsRepository::class => \App\Foundation\IO\DataAccess\EloquentSettingsRepository::class,
+
         // Publishing Domain (registry binding is in register())
     ];
 
