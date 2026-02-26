@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { PlatformPage } from "@/components/platform-page"
+import { PlatformPage } from "@/pages/platforms/ui/platform-page"
 
 const ThreadsPage = () => <PlatformPage platform="THREADS" />
 
