@@ -1,4 +1,4 @@
-import type { PostStatus } from "@/types/post"
+import type { PostStatus } from "@/entities/post/types"
 
 export const statusStyles: Record<PostStatus, { label: string; className: string }> = {
   DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" },

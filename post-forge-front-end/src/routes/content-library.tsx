@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
-import type { GetPostsResponse, Post, PostStatus } from "@/types/post"
+import type { GetPostsResponse, Post, PostStatus } from "@/entities/post/types"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import {
@@ -54,10 +54,10 @@ import {
 import { EmptyState } from "@/shared/ui-patterns/empty-state"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, GET_POSTS } from "@/graphql/operations/posts"
-import { formatDate } from "@/lib/format-date"
-import { platformIcons, platformLabels } from "@/lib/platforms"
-import { statusStyles } from "@/lib/post-status"
+import { DELETE_POST, GET_POSTS } from "@/entities/post/api/posts"
+import { formatDate } from "@/entities/post/lib/format-date"
+import { platformIcons, platformLabels } from "@/entities/social-account/lib/platforms"
+import { statusStyles } from "@/entities/post/lib/post-status"
 import { deleteMedia } from "@/shared/lib/upload-media"
 import { cn } from "@/shared/lib/utils"
 

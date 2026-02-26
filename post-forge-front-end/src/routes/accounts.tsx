@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { ChevronDownIcon, ChevronRightIcon, LinkedinIcon, MessageCircle, PlusIcon, RefreshCwIcon, Settings2Icon, Trash2Icon, UsersIcon, XIcon } from "lucide-react"
-import type { Platform } from "@/types/post"
+import type { Platform } from "@/entities/post/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { EmptyState } from "@/shared/ui-patterns/empty-state"
 import { Button } from "@/shared/ui/button"
@@ -22,9 +22,9 @@ import {
   GET_OAUTH_CREDENTIALS,
   GET_SOCIAL_ACCOUNTS,
   SET_OAUTH_CREDENTIALS,
-} from "@/graphql/operations/social-accounts"
+} from "@/entities/social-account/api/social-accounts"
 import { BACKEND_ORIGIN } from "@/shared/lib/config"
-import { platformLabels } from "@/lib/platforms"
+import { platformLabels } from "@/entities/social-account/lib/platforms"
 import { cn } from "@/shared/lib/utils"
 import { AccountsSkeleton } from "@/shared/ui-patterns/skeletons"
 import {

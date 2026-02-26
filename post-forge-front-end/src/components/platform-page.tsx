@@ -20,7 +20,7 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
-import type { GetPostsResponse, GetThreadsPostInsightsResponse, GetThreadsPostsResponse, Platform, PlatformPost, Post, PostStatus } from "@/types/post"
+import type { GetPostsResponse, GetThreadsPostInsightsResponse, GetThreadsPostsResponse, Platform, PlatformPost, Post, PostStatus } from "@/entities/post/types"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import {
@@ -56,12 +56,12 @@ import { EmptyState } from "@/shared/ui-patterns/empty-state"
 import { PostCardSkeleton } from "@/shared/ui-patterns/skeletons"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POSTS, GET_THREADS_POST_INSIGHTS, PUBLISH_POST } from "@/graphql/operations/posts"
-import { formatScheduledTime } from "@/lib/format-date"
-import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
-import { statusStyles } from "@/lib/post-status"
+import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POSTS, GET_THREADS_POST_INSIGHTS, PUBLISH_POST } from "@/entities/post/api/posts"
+import { formatScheduledTime } from "@/entities/post/lib/format-date"
+import { platformColors, platformIcons, platformLabels } from "@/entities/social-account/lib/platforms"
+import { statusStyles } from "@/entities/post/lib/post-status"
 import { cn } from "@/shared/lib/utils"
-import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
+import { GET_SOCIAL_ACCOUNTS } from "@/entities/social-account/api/social-accounts"
 
 type SocialAccount = {
   id: string

@@ -2,7 +2,7 @@ import * as React from "react"
 import { useQuery } from "@apollo/client/react"
 import { AlertTriangleIcon } from "lucide-react"
 
-import type { Platform } from "@/types/post"
+import type { Platform } from "@/entities/post/types"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
-import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
-import { platformLabels } from "@/lib/platforms"
+import { GET_SOCIAL_ACCOUNTS } from "@/entities/social-account/api/social-accounts"
+import { platformLabels } from "@/entities/social-account/lib/platforms"
 import { BACKEND_ORIGIN } from "@/shared/lib/config"
 
 type SocialAccount = {

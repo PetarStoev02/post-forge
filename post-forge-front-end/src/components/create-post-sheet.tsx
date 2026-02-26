@@ -9,7 +9,7 @@ import {
 
 import { toast } from "sonner"
 
-import type { CreatePostInput, Platform } from "@/types/post"
+import type { CreatePostInput, Platform } from "@/entities/post/types"
 import { Button } from "@/shared/ui/button"
 import { LoadingButton } from "@/shared/ui/loading-button"
 import { Badge } from "@/shared/ui/badge"
@@ -29,8 +29,8 @@ import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { MediaUpload } from "@/components/media-upload"
 import { useCreatePost } from "@/contexts/create-post-context"
-import { CREATE_POST } from "@/graphql/operations/posts"
-import { platformIcons, platformLabels } from "@/lib/platforms"
+import { CREATE_POST } from "@/entities/post/api/posts"
+import { platformIcons, platformLabels } from "@/entities/social-account/lib/platforms"
 import { cn } from "@/shared/lib/utils"
 
 const PLATFORM_MAX_CHARS: Record<Platform, number> = {

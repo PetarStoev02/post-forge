@@ -16,7 +16,7 @@ import {
 
 import { toast } from "sonner"
 
-import type { CreatePostInput, Platform, Post, UpdatePostInput } from "@/types/post"
+import type { CreatePostInput, Platform, Post, UpdatePostInput } from "@/entities/post/types"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
 import { Button } from "@/shared/ui/button"
 import { LoadingButton } from "@/shared/ui/loading-button"
@@ -53,10 +53,10 @@ import { ScrollArea } from "@/shared/ui/scroll-area"
 import { Separator } from "@/shared/ui/separator"
 import { MediaUpload } from "@/components/media-upload"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/graphql/operations/posts"
-import { buildScheduledAt, formatDateForInput, formatDateTime } from "@/lib/format-date"
-import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
-import { statusStyles } from "@/lib/post-status"
+import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/entities/post/api/posts"
+import { buildScheduledAt, formatDateForInput, formatDateTime } from "@/entities/post/lib/format-date"
+import { platformColors, platformIcons, platformLabels } from "@/entities/social-account/lib/platforms"
+import { statusStyles } from "@/entities/post/lib/post-status"
 import { cn } from "@/shared/lib/utils"
 
 const PLATFORM_MAX_CHARS: Record<Platform, number> = {

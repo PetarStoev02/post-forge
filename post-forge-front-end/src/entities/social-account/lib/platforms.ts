@@ -3,7 +3,7 @@ import {
   MessageCircle,
   TwitterIcon,
 } from "lucide-react"
-import type { Platform } from "@/types/post"
+import type { Platform } from "@/entities/social-account/types"
 
 export const platformIcons: Record<Platform, React.ComponentType<{ className?: string }>> = {
   TWITTER: TwitterIcon,

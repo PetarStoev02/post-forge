@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner"
 import type {DragEndEvent, DragStartEvent} from "@dnd-kit/core";
 
-import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, GetThreadsCalendarPostsResponse, PlatformPost, Post } from "@/types/post"
+import type { Platform as APIPlatform, PostStatus as APIPostStatus, CreatePostInput, GetCalendarPostsResponse, GetThreadsCalendarPostsResponse, PlatformPost, Post } from "@/entities/post/types"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import {
@@ -35,13 +35,13 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group"
-import { platformColors as sharedPlatformColors, platformIcons as sharedPlatformIcons } from "@/lib/platforms"
+import { platformColors as sharedPlatformColors, platformIcons as sharedPlatformIcons } from "@/entities/social-account/lib/platforms"
 import { cn } from "@/shared/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { useCalendarStore } from "@/stores/calendar-store"
-import { CREATE_POST, GET_CALENDAR_POSTS, GET_THREADS_CALENDAR_POSTS, UPDATE_POST } from "@/graphql/operations/posts"
-import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
+import { CREATE_POST, GET_CALENDAR_POSTS, GET_THREADS_CALENDAR_POSTS, UPDATE_POST } from "@/entities/post/api/posts"
+import { GET_SOCIAL_ACCOUNTS } from "@/entities/social-account/api/social-accounts"
 import { LoadingIndicator } from "@/shared/ui/loading-indicator"
 import { CalendarSkeleton } from "@/shared/ui-patterns/skeletons"
 

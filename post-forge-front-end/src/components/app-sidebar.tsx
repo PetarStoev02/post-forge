@@ -15,12 +15,12 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import type { Platform } from "@/types/post"
+import type { Platform } from "@/entities/post/types"
 import { AccountSwitcher } from "@/components/account-switcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { useCreatePost } from "@/contexts/create-post-context"
-import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
-import { platformLabels } from "@/lib/platforms"
+import { GET_SOCIAL_ACCOUNTS } from "@/entities/social-account/api/social-accounts"
+import { platformLabels } from "@/entities/social-account/lib/platforms"
 import {
   Sidebar,
   SidebarContent,

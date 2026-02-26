@@ -20,7 +20,7 @@ import {
 
 import { toast } from "sonner"
 
-import type { GetDashboardStatsResponse, Post } from "@/types/post"
+import type { GetDashboardStatsResponse, Post } from "@/entities/post/types"
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Badge } from "@/shared/ui/badge"
@@ -35,12 +35,12 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip"
-import { platformColors, platformIcons } from "@/lib/platforms"
+import { platformColors, platformIcons } from "@/entities/social-account/lib/platforms"
 import { cn } from "@/shared/lib/utils"
 import { DashboardSkeleton } from "@/shared/ui-patterns/skeletons"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
-import { DELETE_POST, GET_DASHBOARD_STATS } from "@/graphql/operations/posts"
+import { DELETE_POST, GET_DASHBOARD_STATS } from "@/entities/post/api/posts"
 
 type StatCardProps = {
   title: string

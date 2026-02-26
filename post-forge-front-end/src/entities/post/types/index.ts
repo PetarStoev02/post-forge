@@ -1,4 +1,6 @@
-export type Platform = 'TWITTER' | 'LINKEDIN' | 'THREADS';
+export type { Platform } from '@/entities/social-account/types'
+import type { Platform } from '@/entities/social-account/types'
+
 export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PENDING' | 'PUBLISHED' | 'CANCELLED' | 'FAILED';
 
 export type LinkPreview = {

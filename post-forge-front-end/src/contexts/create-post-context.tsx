@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { Platform } from "@/types/post"
+import type { Platform } from "@/entities/post/types"
 
 type OpenSheetOptions = {
   date?: Date

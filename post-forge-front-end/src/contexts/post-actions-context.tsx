@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { Post } from "@/types/post"
+import type { Post } from "@/entities/post/types"
 
 type ActionMode = "view" | "edit" | "reschedule" | "delete" | null
 
