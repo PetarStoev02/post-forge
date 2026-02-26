@@ -52,8 +52,8 @@ import {
   TableRow,
 } from "@/shared/ui/table"
 import { EmptyState } from "@/shared/ui-patterns/empty-state"
-import { useCreatePost } from "@/contexts/create-post-context"
-import { usePostActions } from "@/contexts/post-actions-context"
+import { useCreatePost } from "@/features/post-creation/model/create-post-context"
+import { usePostActions } from "@/features/post-management/model/post-actions-context"
 import { DELETE_POST, GET_POSTS } from "@/entities/post/api/posts"
 import { formatDate } from "@/entities/post/lib/format-date"
 import { platformIcons, platformLabels } from "@/entities/social-account/lib/platforms"

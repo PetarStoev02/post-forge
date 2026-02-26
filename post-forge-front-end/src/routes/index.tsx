@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { ContentCalendar } from "@/components/content-calendar"
+import { ContentCalendar } from "@/features/content-calendar/ui/content-calendar"
 
 const CalendarPage = () => {
   return (

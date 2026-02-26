@@ -38,8 +38,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip"
 import { platformColors, platformIcons } from "@/entities/social-account/lib/platforms"
 import { cn } from "@/shared/lib/utils"
 import { DashboardSkeleton } from "@/shared/ui-patterns/skeletons"
-import { useCreatePost } from "@/contexts/create-post-context"
-import { usePostActions } from "@/contexts/post-actions-context"
+import { useCreatePost } from "@/features/post-creation/model/create-post-context"
+import { usePostActions } from "@/features/post-management/model/post-actions-context"
 import { DELETE_POST, GET_DASHBOARD_STATS } from "@/entities/post/api/posts"
 
 type StatCardProps = {

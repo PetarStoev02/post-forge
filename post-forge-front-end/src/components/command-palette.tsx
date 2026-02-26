@@ -23,7 +23,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/shared/ui/command"
-import { useCreatePost } from "@/contexts/create-post-context"
+import { useCreatePost } from "@/features/post-creation/model/create-post-context"
 
 export const CommandPalette = () => {
   const [open, setOpen] = React.useState(false)

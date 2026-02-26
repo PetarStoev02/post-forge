@@ -16,9 +16,9 @@ import {
 } from "lucide-react"
 
 import type { Platform } from "@/entities/post/types"
-import { AccountSwitcher } from "@/components/account-switcher"
+import { AccountSwitcher } from "@/features/social-accounts/ui/account-switcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
-import { useCreatePost } from "@/contexts/create-post-context"
+import { useCreatePost } from "@/features/post-creation/model/create-post-context"
 import { GET_SOCIAL_ACCOUNTS } from "@/entities/social-account/api/social-accounts"
 import { platformLabels } from "@/entities/social-account/lib/platforms"
 import {
