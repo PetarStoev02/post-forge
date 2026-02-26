@@ -54,7 +54,9 @@ import { Separator } from "@/components/ui/separator"
 import { MediaUpload } from "@/components/media-upload"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { CREATE_POST, DELETE_POST, UPDATE_POST } from "@/graphql/operations/posts"
+import { buildScheduledAt, formatDateForInput, formatDateTime } from "@/lib/format-date"
 import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
+import { statusStyles } from "@/lib/post-status"
 import { cn } from "@/lib/utils"
 
 const PLATFORM_MAX_CHARS: Record<Platform, number> = {
@@ -63,36 +65,20 @@ const PLATFORM_MAX_CHARS: Record<Platform, number> = {
   THREADS: 500,
 }
 
-const statusStyles: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200" },
-  SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200" },
-  PUBLISHED: { label: "Published", className: "bg-green-100 text-green-700 hover:bg-green-200 border-green-200" },
-  FAILED: { label: "Failed", className: "bg-red-100 text-red-700 hover:bg-red-200 border-red-200" },
-  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200" },
-  CANCELLED: { label: "Cancelled", className: "bg-gray-100 text-gray-500 hover:bg-gray-200 border-gray-200" },
-}
+const STATUS_DROPDOWN_OPTIONS = [
+  { value: "DRAFT", label: "Draft", dotColor: "bg-slate-400" },
+  { value: "SCHEDULED", label: "Scheduled", dotColor: "bg-blue-500" },
+  { value: "PENDING", label: "Pending Review", dotColor: "bg-yellow-500" },
+  { value: "PUBLISHED", label: "Published", dotColor: "bg-green-500" },
+  { value: "CANCELLED", label: "Cancelled", dotColor: "bg-gray-400" },
+  { value: "FAILED", label: "Failed", dotColor: "bg-red-500" },
+] as const
 
-const formatDateTime = (dateString: string): string => {
-  const normalizedDate = dateString.replace(" ", "T")
-  const date = new Date(normalizedDate)
-  return date.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })
-}
-
-const formatDateForInput = (dateString: string): { date: Date; time: string } => {
-  const normalizedDate = dateString.replace(" ", "T")
-  const date = new Date(normalizedDate)
-  const hours = String(date.getHours()).padStart(2, "0")
-  const minutes = String(date.getMinutes()).padStart(2, "0")
-  return { date, time: `${hours}:${minutes}` }
-}
+const PLATFORM_OPTIONS = (Object.keys(platformIcons) as Array<Platform>).map((id) => ({
+  id,
+  label: platformLabels[id],
+  icon: platformIcons[id],
+}))
 
 export const PostDetailSheet = () => {
   const { selectedPost, actionMode, closePost, setActionMode } = usePostActions()
@@ -200,35 +186,20 @@ export const PostDetailSheet = () => {
 
   const handleSaveEdit = async () => {
     if (!selectedPost) return
-
-    let scheduledAt: string | undefined
-    if (editDate) {
-      const [hours, minutes] = editTime.split(":").map(Number)
-      const date = new Date(editDate)
-      date.setHours(hours, minutes, 0, 0)
-      const pad = (n: number) => n.toString().padStart(2, "0")
-      scheduledAt = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(hours)}:${pad(minutes)}:00`
-    }
-
     const input: UpdatePostInput = {
       content: editContent,
       platforms: editPlatforms,
       hashtags: editHashtags,
       mentions: editMentions,
       mediaUrls: editMediaUrls,
-      scheduledAt,
+      scheduledAt: editDate ? buildScheduledAt(editDate, editTime) : undefined,
     }
     await updatePost({ variables: { id: selectedPost.id, input } })
   }
 
   const handleSaveReschedule = async () => {
     if (!selectedPost || !rescheduleDate) return
-    const [hours, minutes] = rescheduleTime.split(":").map(Number)
-    const date = new Date(rescheduleDate)
-    date.setHours(hours, minutes, 0, 0)
-    const pad = (n: number) => n.toString().padStart(2, "0")
-    const scheduledAt = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(hours)}:${pad(minutes)}:00`
-
+    const scheduledAt = buildScheduledAt(rescheduleDate, rescheduleTime)
     await updatePost({ variables: { id: selectedPost.id, input: { scheduledAt } } })
   }
 
@@ -291,50 +262,20 @@ export const PostDetailSheet = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("DRAFT")}
-                    className={selectedPost.status === "DRAFT" ? "bg-muted" : ""}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-slate-400" />
-                    Draft
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("SCHEDULED")}
-                    className={selectedPost.status === "SCHEDULED" ? "bg-muted" : ""}
-                    disabled={!selectedPost.scheduledAt}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-blue-500" />
-                    Scheduled
-                    {!selectedPost.scheduledAt && <span className="ml-2 text-xs text-muted-foreground">(needs date)</span>}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("PENDING")}
-                    className={selectedPost.status === "PENDING" ? "bg-muted" : ""}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-yellow-500" />
-                    Pending Review
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("PUBLISHED")}
-                    className={selectedPost.status === "PUBLISHED" ? "bg-muted" : ""}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-green-500" />
-                    Published
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("CANCELLED")}
-                    className={selectedPost.status === "CANCELLED" ? "bg-muted" : ""}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-gray-400" />
-                    Cancelled
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("FAILED")}
-                    className={selectedPost.status === "FAILED" ? "bg-muted" : ""}
-                  >
-                    <span className="mr-2 size-2 rounded-full bg-red-500" />
-                    Failed
-                  </DropdownMenuItem>
+                  {STATUS_DROPDOWN_OPTIONS.map((option) => (
+                    <DropdownMenuItem
+                      key={option.value}
+                      onClick={() => handleStatusChange(option.value)}
+                      className={selectedPost.status === option.value ? "bg-muted" : ""}
+                      disabled={option.value === "SCHEDULED" && !selectedPost.scheduledAt}
+                    >
+                      <span className={cn("mr-2 size-2 rounded-full", option.dotColor)} />
+                      {option.label}
+                      {option.value === "SCHEDULED" && !selectedPost.scheduledAt && (
+                        <span className="ml-2 text-xs text-muted-foreground">(needs date)</span>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -643,10 +584,6 @@ const EditMode = ({
   mediaUrls,
   setMediaUrls,
 }: EditModeProps) => {
-  const PLATFORM_OPTIONS: Array<{ id: Platform; label: string; icon: React.ComponentType<{ className?: string }> }> = (
-    Object.keys(platformIcons) as Array<Platform>
-  ).map((id) => ({ id, label: platformLabels[id], icon: platformIcons[id] }))
-
   return (
     <div className="space-y-5">
       {/* Platform Selection */}

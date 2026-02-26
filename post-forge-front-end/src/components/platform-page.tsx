@@ -54,11 +54,13 @@ import {
 } from "@/components/ui/pagination"
 import { EmptyState } from "@/components/empty-state"
 import { PostCardSkeleton } from "@/components/skeletons"
-import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
-import { cn } from "@/lib/utils"
 import { useCreatePost } from "@/contexts/create-post-context"
 import { usePostActions } from "@/contexts/post-actions-context"
 import { DELETE_POST, DELETE_THREADS_POST, GET_POSTS, GET_THREADS_POSTS, GET_THREADS_POST_INSIGHTS, PUBLISH_POST } from "@/graphql/operations/posts"
+import { formatScheduledTime } from "@/lib/format-date"
+import { platformColors, platformIcons, platformLabels } from "@/lib/platforms"
+import { statusStyles } from "@/lib/post-status"
+import { cn } from "@/lib/utils"
 import { GET_SOCIAL_ACCOUNTS } from "@/graphql/operations/social-accounts"
 
 type SocialAccount = {
@@ -67,28 +69,6 @@ type SocialAccount = {
   platformUserId: string
   metadata?: { name?: string; username?: string; avatar?: string } | null
   needsReconnect?: boolean
-}
-
-const statusStyles: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Draft", className: "bg-slate-100 text-slate-700 border-slate-200" },
-  SCHEDULED: { label: "Scheduled", className: "bg-blue-100 text-blue-700 border-blue-200" },
-  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  PUBLISHED: { label: "Published", className: "bg-green-100 text-green-700 border-green-200" },
-  CANCELLED: { label: "Cancelled", className: "bg-gray-100 text-gray-500 border-gray-200" },
-  FAILED: { label: "Failed", className: "bg-red-100 text-red-700 border-red-200" },
-}
-
-const formatScheduledTime = (scheduledAt: string | null | undefined): string => {
-  if (!scheduledAt) return "No date"
-  const normalizedDate = scheduledAt.replace(" ", "T")
-  const date = new Date(normalizedDate)
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })
 }
 
 type UnifiedPost =
