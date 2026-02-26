@@ -6,6 +6,7 @@ export const POST_FRAGMENT = gql`
     content
     platforms
     status
+    errorMessage
     scheduledAt
     mediaUrls
     hashtags

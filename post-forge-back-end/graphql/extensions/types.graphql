@@ -8,6 +8,7 @@ type Post {
     content: String!
     platforms: [Platform!]!
     status: PostStatus!
+    errorMessage: String @rename(attribute: "error_message")
     scheduledAt: DateTime @rename(attribute: "scheduled_at")
     mediaUrls: [String!] @rename(attribute: "media_urls")
     hashtags: [String!]

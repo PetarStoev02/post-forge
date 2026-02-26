@@ -13,6 +13,7 @@ export type Post = {
   content: string
   platforms: Array<Platform>
   status: PostStatus
+  errorMessage?: string | null
   scheduledAt?: string | null
   mediaUrls: Array<string>
   hashtags: Array<string>
