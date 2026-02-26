@@ -59,4 +59,24 @@ final readonly class EloquentSocialAccountRepository implements SocialAccountRep
     {
         return SocialAccount::destroy($id) > 0;
     }
+
+    public function updateTokens(
+        string $id,
+        string $accessToken,
+        ?string $refreshToken = null,
+        ?\DateTimeInterface $tokenExpiresAt = null,
+    ): void {
+        $account = SocialAccount::findOrFail($id);
+        $account->access_token = $accessToken;
+
+        if ($refreshToken !== null) {
+            $account->refresh_token = $refreshToken;
+        }
+
+        if ($tokenExpiresAt !== null) {
+            $account->token_expires_at = $tokenExpiresAt;
+        }
+
+        $account->save();
+    }
 }

@@ -7,6 +7,7 @@ namespace App\Publishing\IO\Publishers;
 use App\Foundation\Settings\OAuthCredentialsSettings;
 use App\Posts\Entities\Models\Post;
 use App\SocialAccounts\Entities\Models\SocialAccount;
+use App\SocialAccounts\UseCases\Contracts\SocialAccountRepository;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -16,6 +17,7 @@ final readonly class TwitterPublisher implements PlatformPublisher
 
     public function __construct(
         private OAuthCredentialsSettings $oauthCredentials,
+        private SocialAccountRepository $socialAccountRepository,
     ) {}
 
     public function publish(Post $post, SocialAccount $account): string
@@ -69,6 +71,16 @@ final readonly class TwitterPublisher implements PlatformPublisher
             throw new RuntimeException("Twitter token refresh failed: {$error}");
         }
 
+        $expiresIn = $response->json('expires_in');
+
+        $this->socialAccountRepository->updateTokens(
+            $account->id,
+            $response->json('access_token'),
+            $response->json('refresh_token'),
+            $expiresIn !== null ? now()->addSeconds($expiresIn) : null,
+        );
+
+        // Update the in-memory model so callers see fresh tokens
         $account->access_token = $response->json('access_token');
 
         $newRefreshToken = $response->json('refresh_token');
@@ -76,12 +88,9 @@ final readonly class TwitterPublisher implements PlatformPublisher
             $account->refresh_token = $newRefreshToken;
         }
 
-        $expiresIn = $response->json('expires_in');
         if ($expiresIn !== null) {
             $account->token_expires_at = now()->addSeconds($expiresIn);
         }
-
-        $account->save();
     }
 
     /**

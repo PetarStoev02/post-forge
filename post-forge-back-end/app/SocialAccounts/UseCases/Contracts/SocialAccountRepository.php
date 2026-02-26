@@ -29,4 +29,14 @@ interface SocialAccountRepository
     public function findByWorkspaceAndPlatform(string $workspaceId, string $platform): ?SocialAccount;
 
     public function delete(string $id): bool;
+
+    /**
+     * Update OAuth tokens for a social account.
+     */
+    public function updateTokens(
+        string $id,
+        string $accessToken,
+        ?string $refreshToken = null,
+        ?\DateTimeInterface $tokenExpiresAt = null,
+    ): void;
 }

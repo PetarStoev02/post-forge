@@ -6,6 +6,7 @@ namespace App\Publishing\IO\Publishers;
 
 use App\Posts\Entities\Models\Post;
 use App\SocialAccounts\Entities\Models\SocialAccount;
+use App\SocialAccounts\UseCases\Contracts\SocialAccountRepository;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
@@ -14,6 +15,10 @@ use RuntimeException;
 final readonly class ThreadsPublisher implements PlatformPublisher
 {
     private const BASE_URL = 'https://graph.threads.net';
+
+    public function __construct(
+        private SocialAccountRepository $socialAccountRepository,
+    ) {}
 
     public function publish(Post $post, SocialAccount $account): string
     {
@@ -236,14 +241,20 @@ final readonly class ThreadsPublisher implements PlatformPublisher
             return;
         }
 
-        $account->access_token = $response->json('access_token');
-
         $expiresIn = $response->json('expires_in');
+
+        $this->socialAccountRepository->updateTokens(
+            $account->id,
+            $response->json('access_token'),
+            null,
+            $expiresIn !== null ? now()->addSeconds($expiresIn) : null,
+        );
+
+        // Update the in-memory model so callers see fresh tokens
+        $account->access_token = $response->json('access_token');
         if ($expiresIn !== null) {
             $account->token_expires_at = now()->addSeconds($expiresIn);
         }
-
-        $account->save();
     }
 
     private function waitForContainerReady(string $apiVersion, string $containerId, string $accessToken): void
