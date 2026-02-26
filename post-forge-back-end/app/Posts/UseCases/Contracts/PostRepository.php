@@ -38,4 +38,9 @@ interface PostRepository
     public function getPostsForDate(string $date): Collection;
 
     public function findReadyToPublish(): Collection;
+
+    /**
+     * Remove a media URL from all posts that reference it.
+     */
+    public function removeMediaUrl(string $url): void;
 }

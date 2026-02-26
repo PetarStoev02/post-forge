@@ -132,4 +132,15 @@ final readonly class EloquentPostRepository implements PostRepository
             ->orderBy('scheduled_at', 'asc')
             ->get();
     }
+
+    public function removeMediaUrl(string $url): void
+    {
+        Post::whereJsonContains('media_urls', $url)->each(function (Post $post) use ($url) {
+            $urls = array_values(array_filter(
+                $post->media_urls ?? [],
+                fn (string $u) => $u !== $url,
+            ));
+            $post->update(['media_urls' => $urls]);
+        });
+    }
 }
