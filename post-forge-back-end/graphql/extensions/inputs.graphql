@@ -19,6 +19,7 @@ input UpdatePostInput {
     content: String
     platforms: [Platform!]
     status: PostStatus
+    errorMessage: String
     scheduledAt: DateTime
     mediaUrls: [String!]
     hashtags: [String!]

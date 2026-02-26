@@ -58,11 +58,15 @@ final readonly class PublishPostInteractor
             $this->postRepository->update($postId, [
                 'status' => PostStatus::Published,
                 'platform_post_ids' => $platformPostIds,
+                'error_message' => null,
             ]);
 
             return $this->postRepository->findById($postId);
         } catch (\Throwable $e) {
-            $this->postRepository->update($postId, ['status' => PostStatus::Failed]);
+            $this->postRepository->update($postId, [
+                'status' => PostStatus::Failed,
+                'error_message' => $e->getMessage(),
+            ]);
 
             throw $e;
         }

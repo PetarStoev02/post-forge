@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useMutation } from "@apollo/client/react"
 import {
+  AlertCircleIcon,
   AtSignIcon,
   CalendarClockIcon,
   CalendarIcon,
@@ -16,6 +17,7 @@ import {
 import { toast } from "sonner"
 
 import type { CreatePostInput, Platform, Post, UpdatePostInput } from "@/types/post"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { LoadingButton } from "@/components/ui/loading-button"
 import { Badge } from "@/components/ui/badge"
@@ -574,6 +576,15 @@ const ViewMode = ({ post }: { post: Post }) => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Error Message */}
+      {post.status === "FAILED" && post.errorMessage && (
+        <Alert variant="destructive">
+          <AlertCircleIcon className="size-4" />
+          <AlertTitle>Publishing Failed</AlertTitle>
+          <AlertDescription>{post.errorMessage}</AlertDescription>
+        </Alert>
       )}
 
       <Separator />

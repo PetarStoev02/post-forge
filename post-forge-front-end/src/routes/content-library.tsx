@@ -208,6 +208,9 @@ const PostCard = ({ post, onClick, onDelete }: PostCardProps) => {
             </div>
           </div>
           <p className="mt-1.5 line-clamp-2 text-sm">{post.content}</p>
+          {post.status === "FAILED" && post.errorMessage && (
+            <p className="mt-1 line-clamp-1 text-xs text-destructive">{post.errorMessage}</p>
+          )}
           {post.mediaUrls.length > 0 && (
             <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
               <ImageIcon className="size-3" />
